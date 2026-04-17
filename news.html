@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آخر الأخبار والتحديثات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #9C8260; /* اللون الذهبي/البني الموجود في تطبيقك */
+            --dark-color: #1E293B;   /* اللون الكحلي الداكن للخطوط */
+            --bg-color: #F8FAFC;     /* لون خلفية مريح للعين */
+            --card-bg: #FFFFFF;      /* خلفية البطاقات */
+            --text-muted: #64748B;   /* لون النصوص الفرعية */
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--dark-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #CBD5E1;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            margin: 5px 0 0 0;
+            font-size: 14px;
+        }
+
+        .news-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .news-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-right: 5px solid var(--primary-color);
+            transition: transform 0.2s ease;
+        }
+
+        .news-card:active {
+            transform: scale(0.98);
+        }
+
+        .news-date {
+            display: inline-block;
+            background-color: #F1F5F9;
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .news-title {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: var(--dark-color);
+        }
+
+        .news-content {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* تنسيقات إضافية للحالات (تحديث، تنبيه، صيانة) */
+        .card-alert { border-right-color: #EF4444; }
+        .card-update { border-right-color: #10B981; }
+        
+        .tag-alert { background-color: #FEE2E2; color: #EF4444; }
+        .tag-update { background-color: #D1FAE5; color: #10B981; }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>آخر الأخبار 📰</h1>
+        <p>تابع أحدث التحديثات والتنبيهات الخاصة بالتطبيق</p>
+    </div>
+
+    <div class="news-container">
+
+        <div class="news-card card-update">
+            <span class="news-date tag-update">جديد - الإصدار v13.7</span>
+            <h2 class="news-title">إطلاق التحديث الجديد بنجاح 🚀</h2>
+            <p class="news-content">
+                تم تفعيل ميزات جديدة في لوحة التحكم، بما في ذلك تحسين سرعة الاتصال بالسيرفر والقبول التلقائي للطلبات لضمان تجربة سلسة وبدون تقطيع.
+            </p>
+        </div>
+
+        <div class="news-card">
+            <span class="news-date">18 أبريل 2026</span>
+            <h2 class="news-title">إضافة ميزة تخصيص النغمات 🔔</h2>
+            <p class="news-content">
+                بناءً على طلبكم، أصبح بإمكانكم الآن تخصيص نغمة الطلب بكل سهولة من خلال الإعدادات الجديدة في لوحة التحكم. نتمنى لكم قيادة آمنة!
+            </p>
+        </div>
+
+        <div class="news-card card-alert">
+            <span class="news-date tag-alert">تنبيه هام ⚠️</span>
+            <h2 class="news-title">صيانة مجدولة للسيرفرات</h2>
+            <p class="news-content">
+                سيكون هناك انقطاع بسيط في الخدمة يوم الجمعة القادم من الساعة 3:00 فجراً وحتى 4:00 فجراً بتوقيت السعودية لغرض ترقية قواعد البيانات.
+            </p>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        &copy; Pro Control Panel | جميع الحقوق محفوظة
+    </div>
+
+</body>
+</html>
