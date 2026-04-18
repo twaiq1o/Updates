@@ -11,7 +11,6 @@
         * { 
             box-sizing: border-box; margin: 0; padding: 0; 
             -webkit-tap-highlight-color: transparent; outline: 0; 
-            -webkit-touch-callout: none;
         }
         
         body { 
@@ -34,7 +33,6 @@
             display: flex; flex-direction: column; 
             animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             overflow: hidden;
-            -webkit-user-select: none; user-select: none;
         }
 
         @keyframes popIn {
@@ -137,21 +135,20 @@
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(255,255,255,0.98); z-index: 30;
             border-radius: 32px; display: flex; flex-direction: column;
-            padding: 65px 25px 25px; opacity: 0; pointer-events: none;
+            padding: 65px 25px 25px; 
+            opacity: 0; visibility: hidden; 
             transform: translateY(20px); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .feedback-modal.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .feedback-modal.active { opacity: 1; visibility: visible; transform: translateY(0); }
         .fm-title { font-size: 18px; font-weight: 800; color: #1d1b20; margin-bottom: 15px; text-align: center; }
         
         .feedback-textarea {
             width: 100%; flex-grow: 1; border: 1px solid #e4ddd4; border-radius: 16px;
             padding: 15px; font-family: inherit; font-size: 13px; resize: none;
             margin-bottom: 15px; background: #faf9f7; color: #1d1b20;
-            -webkit-user-select: text !important; user-select: text !important;
-            pointer-events: auto !important;
         }
         
-        .feedback-textarea:focus { border-color: #b8935a; background: #fff; }
+        .feedback-textarea:focus { border-color: #b8935a; background: #fff; outline: none; }
         .fm-actions { display: flex; gap: 10px; flex-shrink: 0; }
         .btn-send { flex: 2; background: #b8935a; color: #fff; border: none; border-radius: 14px; height: 45px; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity 0.2s; }
         .btn-cancel { flex: 1; background: #f0ece4; color: #1d1b20; border: none; border-radius: 14px; height: 45px; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity 0.2s; }
