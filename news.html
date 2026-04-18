@@ -2,13 +2,18 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>مركز الإشعارات</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&family=Tajawal:wght@400;500;700;800&display=swap');
         
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; outline: 0; }
+        /* منع التحديد والنسخ نهائياً */
+        * { 
+            box-sizing: border-box; margin: 0; padding: 0; 
+            -webkit-tap-highlight-color: transparent; outline: 0; 
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+        }
         
         body { 
             font-family: 'Tajawal', system-ui, sans-serif; 
@@ -19,15 +24,18 @@
             justify-content: center;
         }
 
-        /* السر هنا: ارتفاع ثابت قطعي 450 بيكسل يمنع النظام من إعادة الحساب والاهتزاز */
         .card { 
+            position: relative;
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px; 
-            padding: 25px; width: 100%; max-width: 360px; 
-            height: 450px; 
+            /* تعديل البادينق العلوي لإعطاء مساحة لزر اللغة */
+            padding: 65px 25px 25px; 
+            width: 100%; max-width: 360px; 
+            height: 500px; /* الارتفاع المطلوب */
             margin: 0 auto; 
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             display: flex; flex-direction: column; 
             animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            overflow: hidden;
         }
 
         @keyframes popIn {
@@ -35,25 +43,43 @@
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
+        /* زر تغيير اللغة الاحترافي */
+        .lang-toggle {
+            position: absolute; top: 20px; left: 20px; 
+            background: #fff; border: 1px solid #f0ece4; color: #1d1b20; 
+            padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; 
+            font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,.04); transition: transform .2s; direction: ltr; z-index: 20;
+        }
+        html[dir="ltr"] .lang-toggle { left: auto; right: 20px; }
+        .lang-toggle:active { transform: scale(.95); }
+        #globeIcon { color: #7d6b52; transition: transform .6s ease; }
+
+        /* منطقة المحتوى لعمل تأثير التلاشي عند تغيير اللغة */
+        .content-transition {
+            display: flex; flex-direction: column; height: 100%;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .hide-content { opacity: 0; transform: translateY(5px); }
+
         .update-box-wrap { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 20px; flex-shrink: 0; }
         .brand-badge { 
             width: 55px; height: 55px; background: #fff; border-radius: 50%; 
             display: flex; justify-content: center; align-items: center; 
             margin-left: 15px; border: 1px solid rgba(184,147,90,.15); 
             box-shadow: 0 4px 10px rgba(184,147,90,.1); flex-shrink: 0;
+            animation: floatingIcon 4s ease-in-out infinite;
         }
+        html[dir="ltr"] .brand-badge { margin-left: 0; margin-right: 15px; }
         .brand-badge i { color: #b8935a; font-size: 22px; }
         .update-txt-area { flex: 1; text-align: start; }
-        .u-title-clean { font-size: 20px; font-weight: 800; color: #1d1b20; margin-bottom: 2px; letter-spacing: -0.5px; }
+        .u-title-clean { font-size: 20px; font-weight: 800; color: #1d1b20; margin-bottom: 2px; letter-spacing: -0.5px; transition: color 0.3s; }
         .u-sub-clean { font-size: 11.5px; color: #7d6b52; font-weight: 600; line-height: 1.5; }
 
         .changelog-container { 
             background: #faf9f7; border: 1px solid #f0ece4; border-radius: 16px; 
-            padding: 16px; text-align: start; 
-            display: flex; flex-direction: column;
-            flex-grow: 1; /* تأخذ باقي المساحة تلقائياً */
-            overflow: hidden;
-            margin-bottom: 15px;
+            padding: 16px; text-align: start; display: flex; flex-direction: column;
+            flex-grow: 1; overflow: hidden; margin-bottom: 15px;
         }
         .changelog-title { 
             font-size: 12px; font-weight: 800; color: #1d1b20; margin-bottom: 15px; 
@@ -61,11 +87,11 @@
         }
         .changelog-title i { color: #b8935a; font-size: 14px; }
 
-        /* منطقة السكرول للأخبار */
         .changelog-list { 
             list-style: none; display: flex; flex-direction: column; gap: 14px; 
             overflow-y: auto; padding-left: 5px; flex-grow: 1;
         }
+        html[dir="ltr"] .changelog-list { padding-left: 0; padding-right: 5px; }
         .changelog-list::-webkit-scrollbar { width: 4px; }
         .changelog-list::-webkit-scrollbar-thumb { background: #e4ddd4; border-radius: 10px; }
         
@@ -74,67 +100,169 @@
             opacity: 0; transform: translateX(10px); 
             animation: slideInRight 0.5s cubic-bezier(0.2, 1, 0.3, 1) forwards; 
         }
+        html[dir="ltr"] .changelog-list li { transform: translateX(-10px); animation-name: slideInLeft; }
         .changelog-list li:nth-child(1) { animation-delay: 0.1s; }
         .changelog-list li:nth-child(2) { animation-delay: 0.2s; }
 
         @keyframes slideInRight { to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideInLeft { to { opacity: 1; transform: translateX(0); } }
 
-        .cl-icon { color: #b8935a; font-size: 14px; margin-top: 4px; }
+        .cl-icon { 
+            color: #25D366; font-size: 15px; margin-top: 3px; 
+            animation: floatingIcon 3s ease-in-out infinite; 
+        }
         .cl-content { display: flex; flex-direction: column; }
         .cl-tag { 
-            font-size: 9.5px; font-weight: 800; background: rgba(184,147,90,.1); 
-            color: #b8935a; padding: 3px 8px; border-radius: 8px; 
+            font-size: 9.5px; font-weight: 800; padding: 3px 8px; border-radius: 8px; 
             align-self: flex-start; margin-bottom: 6px; letter-spacing: 0.5px;
+            background: rgba(37,211,102,.1); color: #1b9e4b;
         }
-        .cl-tag.success { background: rgba(37,211,102,.1); color: #1b9e4b; }
         .cl-title { font-size: 13.5px; font-weight: 800; color: #1d1b20; margin-bottom: 4px; line-height: 1.4; }
         .cl-desc { font-size: 11.5px; color: #4a453f; font-weight: 600; line-height: 1.6; }
 
-        .btn-close { 
+        /* الزر الاحترافي باللمعان والنبض */
+        .btn-close-modern {
             position: relative; background: linear-gradient(135deg, #1d1b20 0, #2f2a24 50%, #1d1b20 100%); 
             background-size: 200% auto; color: #fff; border-radius: 16px; font-weight: 700; 
             height: 50px; min-height: 50px; border: 1px solid rgba(184,147,90,.5); 
+            animation: bgShift 8s linear infinite, floatButtonGold 2.8s ease-in-out infinite; 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; 
             display: flex; justify-content: center; align-items: center; gap: 8px; 
-            width: 100%; cursor: pointer; font-family: inherit; font-size: 14.5px;
-            flex-shrink: 0; box-shadow: 0 4px 15px rgba(29,27,32,.15);
+            width: 100%; cursor: pointer; font-family: inherit; font-size: 14.5px; flex-shrink: 0; z-index: 1;
         }
-        .btn-close:active { transform: scale(0.96); box-shadow: 0 2px 8px rgba(29,27,32,.1); }
+        .btn-close-modern::after {
+            content: ''; position: absolute; top: 0; left: -120%; width: 60%; height: 100%; 
+            background: linear-gradient(to right, transparent, rgba(184,147,90,.6), transparent); 
+            transform: skewX(-25deg); animation: shimmerSweepContinuous 4s linear infinite; z-index: -1;
+        }
+        .btn-close-modern:hover { border-color: rgba(184,147,90,.9); }
+        .btn-close-modern:active { transform: translateY(0) scale(0.96); animation: none; }
+
+        @keyframes bgShift { 0% { background-position: 0 center; } 100% { background-position: 200% center; } }
+        @keyframes floatButtonGold { 
+            0%, 100% { transform: translateY(0); box-shadow: 0 4px 15px rgba(29,27,32,.2); } 
+            50% { transform: translateY(-3.5px); box-shadow: 0 12px 28px rgba(184,147,90,.45); } 
+        }
+        @keyframes shimmerSweepContinuous { 0% { left: -120%; } 100% { left: 220%; } }
+        @keyframes floatingIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <div class="update-box-wrap">
-            <div class="brand-badge"><i class="far fa-newspaper"></i></div>
-            <div class="update-txt-area">
-                <h3 class="u-title-clean">مركز الإشعارات</h3>
-                <p class="u-sub-clean">تابع أحدث الأخبار والتنبيهات</p>
-            </div>
-        </div>
-
-        <div class="changelog-container">
-            <div class="changelog-title"><i class="fas fa-bolt"></i> <span>آخر التحديثات</span></div>
-            <ul class="changelog-list">
-                <li>
-                    <i class="fas fa-rocket cl-icon"></i>
-                    <div class="cl-content">
-                        <span class="cl-tag success">جديد - الإصدار v13.7</span>
-                        <div class="cl-title">أداء أسرع واستقرار أعلى</div>
-                        <div class="cl-desc">تم تحسين خوارزمية الاتصال بالسيرفر لضمان استجابة أسرع بنسبة 40% للحصول على أولوية في الطلبات.</div>
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <button class="btn-close" onclick="closeDialog()">
-            <i class="fas fa-check-circle"></i> حسناً، إغلاق النافذة
+        <button class="lang-toggle" onclick="toggleLang()">
+            <i class="fas fa-globe" id="globeIcon"></i> 
+            <span id="langText" style="margin-top: 2px;">English</span>
         </button>
+
+        <div id="contentTransition" class="content-transition">
+            <div class="update-box-wrap">
+                <div class="brand-badge"><i class="far fa-newspaper"></i></div>
+                <div class="update-txt-area">
+                    <h3 class="u-title-clean" id="mTitle">مركز الإشعارات</h3>
+                    <p class="u-sub-clean" id="mSub">تابع أحدث الأخبار والتنبيهات</p>
+                </div>
+            </div>
+
+            <div class="changelog-container">
+                <div class="changelog-title"><i class="fas fa-bolt"></i> <span id="uTitle">آخر التحديثات</span></div>
+                <ul class="changelog-list">
+                    <li>
+                        <i class="fas fa-check-circle cl-icon"></i>
+                        <div class="cl-content">
+                            <span class="cl-tag" id="cTag">جديد - الإصدار v13.7</span>
+                            <div class="cl-title" id="cTitle">أداء أسرع واستقرار أعلى</div>
+                            <div class="cl-desc" id="cDesc">تم تحسين خوارزمية الاتصال بالسيرفر لضمان استجابة أسرع بنسبة 40% للحصول على أولوية في الطلبات.</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <button class="btn-close-modern" onclick="closeDialog()">
+                <i class="fas fa-shield-alt"></i> <span id="btnText">المتابعة للوحة التحكم</span>
+            </button>
+        </div>
     </div>
 
     <script>
+        // 1. منع قائمة الكليك يمين للنسخ
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
+        // 2. دالة إغلاق النافذة
         function closeDialog() {
             window.location.href = "ninja://close";
         }
+
+        // 3. قاموس اللغات الاحترافي
+        const LANG_DICT = {
+            ar: {
+                dir: 'rtl', opp: 'en', langT: 'English',
+                title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
+                upTitle: 'آخر التحديثات',
+                btn: 'المتابعة للوحة التحكم',
+                tag: 'جديد - الإصدار v13.7',
+                cTit: 'أداء أسرع واستقرار أعلى',
+                cDes: 'تم تحسين خوارزمية الاتصال بالسيرفر لضمان استجابة أسرع بنسبة 40% للحصول على أولوية في الطلبات.'
+            },
+            en: {
+                dir: 'ltr', opp: 'ar', langT: 'العربية',
+                title: 'Notification Center', sub: 'Follow the latest news and alerts',
+                upTitle: 'Latest Updates',
+                btn: 'Continue to Dashboard',
+                tag: 'New - Version v13.7',
+                cTit: 'Faster Performance & High Stability',
+                cDes: 'Server connection algorithm optimized for 40% faster response to ensure top priority in orders.'
+            }
+        };
+
+        // 4. التعرف التلقائي على لغة الجوال أو الذاكرة
+        let currentLang = localStorage.getItem('appNewsLang');
+        if (!currentLang) {
+            currentLang = navigator.language.startsWith('ar') ? 'ar' : 'en';
+        }
+
+        // 5. تطبيق اللغة على الواجهة
+        function applyLanguage() {
+            const d = LANG_DICT[currentLang];
+            document.documentElement.lang = currentLang;
+            document.documentElement.dir = d.dir;
+            
+            document.getElementById('langText').innerText = d.langT;
+            document.getElementById('mTitle').innerText = d.title;
+            document.getElementById('mSub').innerText = d.sub;
+            document.getElementById('uTitle').innerText = d.upTitle;
+            document.getElementById('btnText').innerText = d.btn;
+            
+            document.getElementById('cTag').innerText = d.tag;
+            document.getElementById('cTitle').innerText = d.cTit;
+            document.getElementById('cDesc').innerText = d.cDes;
+        }
+
+        // 6. دالة التبديل عند الضغط على الزر مع الأنيميشن
+        window.toggleLang = function() {
+            currentLang = LANG_DICT[currentLang].opp;
+            localStorage.setItem('appNewsLang', currentLang);
+            
+            // دوران أيقونة الكرة الأرضية
+            let globe = document.getElementById('globeIcon');
+            globe.style.transform = globe.style.transform === 'rotate(360deg)' ? 'rotate(0deg)' : 'rotate(360deg)';
+            
+            // إخفاء المحتوى بخفة ثم تغييره وإظهاره
+            let content = document.getElementById('contentTransition');
+            content.classList.add('hide-content');
+            
+            setTimeout(() => {
+                applyLanguage();
+                content.classList.remove('hide-content');
+            }, 300);
+        };
+
+        // تفعيل اللغة عند فتح النافذة
+        window.onload = applyLanguage;
     </script>
 </body>
+</html>
 </html>
