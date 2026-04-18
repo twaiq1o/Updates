@@ -247,11 +247,35 @@
             }
         };
 
-        let currentLang = 'ar';
-        try {
-            let savedLang = localStorage.getItem('ninjaNewsLangV2');
-            if (savedLang) currentLang = savedLang;
-        } catch (e) {}
+        let memoryLikes = {};
+
+        function saveState(key, value) {
+            try { localStorage.setItem(key, value); } catch(e) {}
+            try {
+                let d = new Date(); d.setTime(d.getTime() + (365*24*60*60*1000));
+                document.cookie = key + "=" + value + ";expires=" + d.toUTCString() + ";path=/";
+            } catch(e) {}
+        }
+
+        function removeState(key) {
+            try { localStorage.removeItem(key); } catch(e) {}
+            try { document.cookie = key + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;"; } catch(e) {}
+        }
+
+        function getState(key) {
+            try { let v = localStorage.getItem(key); if(v) return v; } catch(e) {}
+            try {
+                let name = key + "=";
+                let ca = document.cookie.split(';');
+                for(let i=0; i<ca.length; i++) {
+                    let c = ca[i].trim();
+                    if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
+                }
+            } catch(e) {}
+            return null;
+        }
+
+        let currentLang = getState('ninjaNewsLangV2') || 'ar';
 
         function applyLanguage() {
             const d = LANG_DICT[currentLang];
@@ -262,17 +286,15 @@
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
-            
             document.getElementById('cTitNew').innerText = d.cTitNew;
             document.getElementById('cDesNew').innerText = d.cDesNew;
-            
             document.getElementById('cTitOld').innerText = d.cTitOld;
             document.getElementById('cDesOld').innerText = d.cDesOld;
         }
 
         document.getElementById('langBtn').addEventListener('click', function() {
             currentLang = LANG_DICT[currentLang].opp;
-            try { localStorage.setItem('ninjaNewsLangV2', currentLang); } catch (e) {}
+            saveState('ninjaNewsLangV2', currentLang);
             
             let globe = document.getElementById('globeIcon');
             globe.style.transform = globe.style.transform === 'rotate(360deg)' ? 'rotate(0deg)' : 'rotate(360deg)';
@@ -288,8 +310,6 @@
 
         applyLanguage();
 
-        let memoryLikes = {};
-
         function fetchInitialLikes() {
             const likesRef = ref(database, 'news_likes');
             
@@ -300,13 +320,7 @@
             });
 
             ['news1', 'news2'].forEach(newsId => {
-                let isLiked = false;
-                try {
-                    isLiked = localStorage.getItem('liked_' + newsId) === 'true';
-                } catch (e) {
-                    isLiked = memoryLikes[newsId] === true;
-                }
-
+                let isLiked = getState('liked_' + newsId) === 'true' || memoryLikes[newsId] === true;
                 if (isLiked) {
                     let container = document.getElementById('like-' + newsId);
                     let icon = document.getElementById('icon-' + newsId);
@@ -318,13 +332,7 @@
         }
 
         window.toggleLike = function(newsId) {
-            let isLiked = false;
-            try {
-                isLiked = localStorage.getItem('liked_' + newsId) === 'true';
-            } catch (e) {
-                isLiked = memoryLikes[newsId] === true;
-            }
-            
+            let isLiked = getState('liked_' + newsId) === 'true' || memoryLikes[newsId] === true;
             const newsRef = ref(database, 'news_likes/' + newsId);
             
             let container = document.getElementById('like-' + newsId);
@@ -332,8 +340,7 @@
 
             if (isLiked) {
                 runTransaction(newsRef, (currentLikes) => (currentLikes || 1) - 1);
-                
-                try { localStorage.removeItem('liked_' + newsId); } catch(e) {}
+                removeState('liked_' + newsId);
                 memoryLikes[newsId] = false;
 
                 container.classList.remove('liked');
@@ -341,8 +348,7 @@
                 icon.classList.add('far');
             } else {
                 runTransaction(newsRef, (currentLikes) => (currentLikes || 0) + 1);
-                
-                try { localStorage.setItem('liked_' + newsId, 'true'); } catch(e) {}
+                saveState('liked_' + newsId, 'true');
                 memoryLikes[newsId] = true;
 
                 container.classList.add('liked');
