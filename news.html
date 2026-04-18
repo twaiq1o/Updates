@@ -294,11 +294,13 @@
             } catch(e) {}
             return null;
         }
-
+        
+        
 const getDeviceLang = () => {
-    const lang = navigator.language || navigator.userLanguage;
-    return lang.startsWith('en') ? 'en' : 'ar';
+    const lang = (navigator.language || navigator.userLanguage).slice(0, 2);
+    return lang === 'en' ? 'en' : 'ar';
 };
+
 
 let currentLang = getState('ninjaNewsLangV2') || getDeviceLang();
 
