@@ -28,7 +28,7 @@
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px; 
             padding: 65px 25px 25px; 
             width: 100%; max-width: 360px; 
-            height: 500px; 
+            height: 450px; 
             margin: 0 auto; 
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             display: flex; flex-direction: column; 
@@ -49,7 +49,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,.04); transition: transform .2s; direction: ltr; z-index: 20;
         }
         
-        html[dir="ltr"] .lang-toggle { left: auto; right: 20px; }
         .lang-toggle:active { transform: scale(.95); }
         #globeIcon { color: #7d6b52; transition: transform .6s ease; }
 
@@ -106,15 +105,10 @@
         @keyframes slideInLeft { to { opacity: 1; transform: translateX(0); } }
 
         .cl-icon { 
-            color: #25D366; font-size: 15px; margin-top: 3px; 
+            color: #b8935a; font-size: 15px; margin-top: 2px; 
             animation: floatingIcon 3s ease-in-out infinite; 
         }
         .cl-content { display: flex; flex-direction: column; }
-        .cl-tag { 
-            font-size: 9.5px; font-weight: 800; padding: 3px 8px; border-radius: 8px; 
-            align-self: flex-start; margin-bottom: 6px; letter-spacing: 0.5px;
-            background: rgba(37,211,102,.1); color: #1b9e4b;
-        }
         .cl-title { font-size: 13.5px; font-weight: 800; color: #1d1b20; margin-bottom: 4px; line-height: 1.4; }
         .cl-desc { font-size: 11.5px; color: #4a453f; font-weight: 600; line-height: 1.6; }
 
@@ -157,12 +151,11 @@
             </div>
 
             <div class="changelog-container">
-                <div class="changelog-title"><i class="fas fa-bolt"></i> <span id="uTitle">آخر التحديثات</span></div>
+                <div class="changelog-title"><i class="fas fa-bolt"></i> <span id="uTitle">آخر الأخبار</span></div>
                 <ul class="changelog-list">
                     <li>
                         <i class="fas fa-check-circle cl-icon"></i>
                         <div class="cl-content">
-                            <span class="cl-tag" id="cTag">جديد - الإصدار v13.7</span>
                             <div class="cl-title" id="cTitle">أداء أسرع واستقرار أعلى</div>
                             <div class="cl-desc" id="cDesc">تم تحسين خوارزمية الاتصال بالسيرفر لضمان استجابة أسرع بنسبة 40% للحصول على أولوية في الطلبات.</div>
                         </div>
@@ -187,20 +180,18 @@
             ar: {
                 dir: 'rtl', opp: 'en', langT: 'English',
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
-                upTitle: 'آخر التحديثات',
+                upTitle: 'آخر الأخبار',
                 btn: 'حسناً',
-                tag: 'جديد - الإصدار v13.7',
-                cTit: 'أداء أسرع واستقرار أعلى',
-                cDes: 'تم تحسين خوارزمية الاتصال بالسيرفر لضمان استجابة أسرع بنسبة 40% للحصول على أولوية في الطلبات.'
+                cTit: 'إطلاق الإصدار الجديد v13.7',
+                cDes: 'أصبحت خريطة الموقع تدعم الآن نظام "النقاط الحرارية"، لتسهيل اختيار موقعك بالقرب من المطاعم ذات الطلب العالي. كما يتضمن التحديث قسماً جديداً لآخر الأخبار، إلى جانب تحسينات شاملة لضمان استقرار وسرعة التطبيق' 
             },
             en: {
                 dir: 'ltr', opp: 'ar', langT: 'العربية',
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
-                upTitle: 'Latest Updates',
+                upTitle: 'Latest News',
                 btn: 'OK',
-                tag: 'New - Version v13.7',
-                cTit: 'Faster Performance & High Stability',
-                cDes: 'Server connection algorithm optimized for 40% faster response to ensure top priority in orders.'
+                cTit: 'Version v13.7 Released',
+                cDes: 'The location map now supports a "Heatmap" system, making it easier to select your location near high-demand restaurants. This update also includes a new Latest News section and comprehensive improvements for app stability and speed'
             }
         };
 
@@ -227,7 +218,6 @@
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
-            document.getElementById('cTag').innerText = d.tag;
             document.getElementById('cTitle').innerText = d.cTit;
             document.getElementById('cDesc').innerText = d.cDes;
         }
@@ -252,5 +242,7 @@
 
         applyLanguage();
     </script>
+</body>
+</html>
 </body>
 </html>
