@@ -119,28 +119,20 @@
         .cl-desc { font-size: 11.5px; color: #4a453f; font-weight: 600; line-height: 1.6; }
 
         .btn-close-modern {
-            position: relative; background: linear-gradient(135deg, #1d1b20 0, #2f2a24 50%, #1d1b20 100%); 
-            background-size: 200% auto; color: #fff; border-radius: 16px; font-weight: 700; 
+            position: relative; background: #1d1b20; color: #fff; border-radius: 16px; font-weight: 700; 
             height: 50px; min-height: 50px; border: 1px solid rgba(184,147,90,.5); 
-            animation: bgShift 8s linear infinite, floatButtonGold 2.8s ease-in-out infinite; 
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; 
-            display: flex; justify-content: center; align-items: center; gap: 8px; 
-            width: 100%; cursor: pointer; font-family: inherit; font-size: 14.5px; flex-shrink: 0; z-index: 1;
-        }
-        .btn-close-modern::after {
-            content: ''; position: absolute; top: 0; left: -120%; width: 60%; height: 100%; 
-            background: linear-gradient(to right, transparent, rgba(184,147,90,.6), transparent); 
-            transform: skewX(-25deg); animation: shimmerSweepContinuous 4s linear infinite; z-index: -1;
+            animation: floatButtonGold 2.8s ease-in-out infinite; 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            display: flex; justify-content: center; align-items: center; 
+            width: 100%; cursor: pointer; font-family: inherit; font-size: 15px; flex-shrink: 0; z-index: 1;
         }
         .btn-close-modern:hover { border-color: rgba(184,147,90,.9); }
         .btn-close-modern:active { transform: translateY(0) scale(0.96); animation: none; }
 
-        @keyframes bgShift { 0% { background-position: 0 center; } 100% { background-position: 200% center; } }
         @keyframes floatButtonGold { 
             0%, 100% { transform: translateY(0); box-shadow: 0 4px 15px rgba(29,27,32,.2); } 
             50% { transform: translateY(-3.5px); box-shadow: 0 12px 28px rgba(184,147,90,.45); } 
         }
-        @keyframes shimmerSweepContinuous { 0% { left: -120%; } 100% { left: 220%; } }
         @keyframes floatingIcon {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-2px); }
@@ -150,7 +142,7 @@
 <body>
 
     <div class="card">
-        <button class="lang-toggle" onclick="toggleLang()">
+        <button class="lang-toggle" id="langBtn">
             <i class="fas fa-globe" id="globeIcon"></i> 
             <span id="langText" style="margin-top: 2px;">English</span>
         </button>
@@ -178,8 +170,8 @@
                 </ul>
             </div>
 
-            <button class="btn-close-modern" onclick="closeDialog()">
-                <i class="fas fa-shield-alt"></i> <span id="btnText">المتابعة للوحة التحكم</span>
+            <button class="btn-close-modern" id="closeBtn">
+                <span id="btnText">حسناً</span>
             </button>
         </div>
     </div>
@@ -187,16 +179,16 @@
     <script>
         document.addEventListener('contextmenu', e => e.preventDefault());
 
-        function closeDialog() {
+        document.getElementById('closeBtn').addEventListener('click', function() {
             window.location.href = "ninja://close";
-        }
+        });
 
         const LANG_DICT = {
             ar: {
                 dir: 'rtl', opp: 'en', langT: 'English',
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
                 upTitle: 'آخر التحديثات',
-                btn: 'المتابعة للوحة التحكم',
+                btn: 'حسناً',
                 tag: 'جديد - الإصدار v13.7',
                 cTit: 'أداء أسرع واستقرار أعلى',
                 cDes: 'تم تحسين خوارزمية الاتصال بالسيرفر لضمان استجابة أسرع بنسبة 40% للحصول على أولوية في الطلبات.'
@@ -205,17 +197,25 @@
                 dir: 'ltr', opp: 'ar', langT: 'العربية',
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
                 upTitle: 'Latest Updates',
-                btn: 'Continue to Dashboard',
+                btn: 'OK',
                 tag: 'New - Version v13.7',
                 cTit: 'Faster Performance & High Stability',
                 cDes: 'Server connection algorithm optimized for 40% faster response to ensure top priority in orders.'
             }
         };
 
-        let currentLang = localStorage.getItem('ninjaNewsLangX');
-        if (!currentLang) {
-            let sysLang = navigator.language || navigator.userLanguage || '';
-            currentLang = sysLang.toLowerCase().startsWith('en') ? 'en' : 'ar';
+        let currentLang = 'ar';
+        try {
+            let savedLang = localStorage.getItem('ninjaNewsLangV2');
+            if (savedLang) {
+                currentLang = savedLang;
+            } else {
+                let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+                currentLang = sysLang.startsWith('en') ? 'en' : 'ar';
+            }
+        } catch (e) {
+            let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+            currentLang = sysLang.startsWith('en') ? 'en' : 'ar';
         }
 
         function applyLanguage() {
@@ -232,9 +232,11 @@
             document.getElementById('cDesc').innerText = d.cDes;
         }
 
-        function toggleLang() {
+        document.getElementById('langBtn').addEventListener('click', function() {
             currentLang = LANG_DICT[currentLang].opp;
-            localStorage.setItem('ninjaNewsLangX', currentLang);
+            try {
+                localStorage.setItem('ninjaNewsLangV2', currentLang);
+            } catch (e) {}
             
             let globe = document.getElementById('globeIcon');
             globe.style.transform = globe.style.transform === 'rotate(360deg)' ? 'rotate(0deg)' : 'rotate(360deg)';
@@ -246,7 +248,7 @@
                 applyLanguage();
                 content.classList.remove('hide-content');
             }, 300);
-        }
+        });
 
         applyLanguage();
     </script>
