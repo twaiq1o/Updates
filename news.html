@@ -28,7 +28,7 @@
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px; 
             padding: 65px 25px 25px; 
             width: 100%; max-width: 360px; 
-            height: 470px; 
+            height: 530px; 
             margin: 0 auto; 
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             display: flex; flex-direction: column; 
@@ -154,10 +154,17 @@
                 <div class="changelog-title"><i class="fas fa-bolt"></i> <span id="uTitle">آخر الأخبار</span></div>
                 <ul class="changelog-list">
                     <li>
+                        <i class="fas fa-rocket cl-icon"></i>
+                        <div class="cl-content">
+                            <div class="cl-title" id="cTitNew">تجربة أسرع وأكثر سلاسة</div>
+                            <div class="cl-desc" id="cDesNew">تم تحسين أداء التطبيق ليكون أخف وزناً وأسرع استجابة، مما يمنحك تجربة استخدام وتصفح في قمة السلاسة.</div>
+                        </div>
+                    </li>
+                    <li>
                         <i class="fas fa-check-circle cl-icon"></i>
                         <div class="cl-content">
-                            <div class="cl-title" id="cTitle">أداء أسرع واستقرار أعلى</div>
-                            <div class="cl-desc" id="cDesc">تم تحسين خوارزمية الاتصال بالسيرفر لضمان استجابة أسرع بنسبة 40% للحصول على أولوية في الطلبات.</div>
+                            <div class="cl-title" id="cTitOld">إطلاق الإصدار الجديد v13.7</div>
+                            <div class="cl-desc" id="cDesOld">أصبحت خريطة الموقع تدعم الآن نظام "النقاط الحرارية"، لتسهيل اختيار موقعك بالقرب من المطاعم ذات الطلب العالي.</div>
                         </div>
                     </li>
                 </ul>
@@ -182,16 +189,20 @@
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
                 upTitle: 'آخر الأخبار',
                 btn: 'حسناً',
-                cTit: 'إطلاق الإصدار الجديد v13.7',
-                cDes: 'أصبحت خريطة الموقع تدعم الآن نظام "النقاط الحرارية"، لتسهيل اختيار موقعك بالقرب من المطاعم ذات الطلب العالي. كما يتضمن التحديث قسماً جديداً لآخر الأخبار، إلى جانب تحسينات شاملة لضمان استقرار وسرعة التطبيق' 
+                cTitNew: 'تجربة أسرع وأكثر سلاسة',
+                cDesNew: 'تم تحسين أداء التطبيق ليكون أخف وزناً وأسرع استجابة، مما يمنحك تجربة استخدام وتصفح في قمة السلاسة.',
+                cTitOld: 'إطلاق الإصدار الجديد v13.7',
+                cDesOld: 'أصبحت خريطة الموقع تدعم الآن نظام "النقاط الحرارية"، لتسهيل اختيار موقعك بالقرب من المطاعم ذات الطلب العالي. كما يتضمن التحديث قسماً جديداً لآخر الأخبار، إلى جانب تحسينات شاملة لضمان استقرار وسرعة التطبيق' 
             },
             en: {
                 dir: 'ltr', opp: 'ar', langT: 'العربية',
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
                 upTitle: 'Latest News',
                 btn: 'OK',
-                cTit: 'Version v13.7 Released',
-                cDes: 'The location map now supports a "Heatmap" system, making it easier to select your location near high-demand restaurants. This update also includes a new Latest News section and comprehensive improvements for app stability and speed'
+                cTitNew: 'Faster & Smoother Experience',
+                cDesNew: 'The app\'s performance has been optimized to be lighter and more responsive, providing you with a remarkably seamless user experience.',
+                cTitOld: 'Version v13.7 Released',
+                cDesOld: 'The location map now supports a "Heatmap" system, making it easier to select your location near high-demand restaurants. This update also includes a new Latest News section and comprehensive improvements for app stability and speed.'
             }
         };
 
@@ -218,8 +229,14 @@
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
-            document.getElementById('cTitle').innerText = d.cTit;
-            document.getElementById('cDesc').innerText = d.cDes;
+            
+            
+            document.getElementById('cTitNew').innerText = d.cTitNew;
+            document.getElementById('cDesNew').innerText = d.cDesNew;
+            
+            
+            document.getElementById('cTitOld').innerText = d.cTitOld;
+            document.getElementById('cDesOld').innerText = d.cDesOld;
         }
 
         document.getElementById('langBtn').addEventListener('click', function() {
@@ -242,7 +259,5 @@
 
         applyLanguage();
     </script>
-</body>
-</html>
 </body>
 </html>
