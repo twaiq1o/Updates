@@ -203,7 +203,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getDatabase, ref, onValue, runTransaction, goOffline } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        import { getDatabase, ref, onValue, runTransaction, goOffline, goOnline } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDuWatMSvdlLcHyqkiDvu6KLyRUOf0GCUg",
@@ -219,9 +219,28 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
+        function killConnection() {
+            try { goOffline(database); } catch(e) {}
+        }
+
+        function restoreConnection() {
+            try { goOnline(database); } catch(e) {}
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                killConnection();
+            } else {
+                restoreConnection();
+            }
+        });
+
+        window.addEventListener('pagehide', killConnection);
+        window.addEventListener('unload', killConnection);
+
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.getElementById('closeBtn').addEventListener('click', function() {
-            try { goOffline(database); } catch(e) {}
+            killConnection();
             window.location.href = "ninja://close";
         });
 
