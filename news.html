@@ -8,7 +8,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&family=Tajawal:wght@400;500;700;800&display=swap');
         
-        /* منع التحديد والنسخ نهائياً */
         * { 
             box-sizing: border-box; margin: 0; padding: 0; 
             -webkit-tap-highlight-color: transparent; outline: 0; 
@@ -27,10 +26,9 @@
         .card { 
             position: relative;
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px; 
-            /* تعديل البادينق العلوي لإعطاء مساحة لزر اللغة */
             padding: 65px 25px 25px; 
             width: 100%; max-width: 360px; 
-            height: 500px; /* الارتفاع المطلوب */
+            height: 500px; 
             margin: 0 auto; 
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             display: flex; flex-direction: column; 
@@ -43,7 +41,6 @@
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        /* زر تغيير اللغة الاحترافي */
         .lang-toggle {
             position: absolute; top: 20px; left: 20px; 
             background: #fff; border: 1px solid #f0ece4; color: #1d1b20; 
@@ -51,11 +48,11 @@
             font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 8px; 
             box-shadow: 0 4px 12px rgba(0,0,0,.04); transition: transform .2s; direction: ltr; z-index: 20;
         }
+        
         html[dir="ltr"] .lang-toggle { left: auto; right: 20px; }
         .lang-toggle:active { transform: scale(.95); }
         #globeIcon { color: #7d6b52; transition: transform .6s ease; }
 
-        /* منطقة المحتوى لعمل تأثير التلاشي عند تغيير اللغة */
         .content-transition {
             display: flex; flex-direction: column; height: 100%;
             transition: opacity 0.3s ease, transform 0.3s ease;
@@ -70,6 +67,7 @@
             box-shadow: 0 4px 10px rgba(184,147,90,.1); flex-shrink: 0;
             animation: floatingIcon 4s ease-in-out infinite;
         }
+        
         html[dir="ltr"] .brand-badge { margin-left: 0; margin-right: 15px; }
         .brand-badge i { color: #b8935a; font-size: 22px; }
         .update-txt-area { flex: 1; text-align: start; }
@@ -120,7 +118,6 @@
         .cl-title { font-size: 13.5px; font-weight: 800; color: #1d1b20; margin-bottom: 4px; line-height: 1.4; }
         .cl-desc { font-size: 11.5px; color: #4a453f; font-weight: 600; line-height: 1.6; }
 
-        /* الزر الاحترافي باللمعان والنبض */
         .btn-close-modern {
             position: relative; background: linear-gradient(135deg, #1d1b20 0, #2f2a24 50%, #1d1b20 100%); 
             background-size: 200% auto; color: #fff; border-radius: 16px; font-weight: 700; 
@@ -188,15 +185,12 @@
     </div>
 
     <script>
-        // 1. منع قائمة الكليك يمين للنسخ
         document.addEventListener('contextmenu', e => e.preventDefault());
 
-        // 2. دالة إغلاق النافذة
         function closeDialog() {
             window.location.href = "ninja://close";
         }
 
-        // 3. قاموس اللغات الاحترافي
         const LANG_DICT = {
             ar: {
                 dir: 'rtl', opp: 'en', langT: 'English',
@@ -218,39 +212,33 @@
             }
         };
 
-        // 4. التعرف التلقائي على لغة الجوال أو الذاكرة
-        let currentLang = localStorage.getItem('appNewsLang');
+        let currentLang = localStorage.getItem('ninjaNewsLangX');
         if (!currentLang) {
-            currentLang = navigator.language.startsWith('ar') ? 'ar' : 'en';
+            let sysLang = navigator.language || navigator.userLanguage || '';
+            currentLang = sysLang.toLowerCase().startsWith('en') ? 'en' : 'ar';
         }
 
-        // 5. تطبيق اللغة على الواجهة
         function applyLanguage() {
             const d = LANG_DICT[currentLang];
             document.documentElement.lang = currentLang;
             document.documentElement.dir = d.dir;
-            
             document.getElementById('langText').innerText = d.langT;
             document.getElementById('mTitle').innerText = d.title;
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
-            
             document.getElementById('cTag').innerText = d.tag;
             document.getElementById('cTitle').innerText = d.cTit;
             document.getElementById('cDesc').innerText = d.cDes;
         }
 
-        // 6. دالة التبديل عند الضغط على الزر مع الأنيميشن
-        window.toggleLang = function() {
+        function toggleLang() {
             currentLang = LANG_DICT[currentLang].opp;
-            localStorage.setItem('appNewsLang', currentLang);
+            localStorage.setItem('ninjaNewsLangX', currentLang);
             
-            // دوران أيقونة الكرة الأرضية
             let globe = document.getElementById('globeIcon');
             globe.style.transform = globe.style.transform === 'rotate(360deg)' ? 'rotate(0deg)' : 'rotate(360deg)';
             
-            // إخفاء المحتوى بخفة ثم تغييره وإظهاره
             let content = document.getElementById('contentTransition');
             content.classList.add('hide-content');
             
@@ -258,11 +246,9 @@
                 applyLanguage();
                 content.classList.remove('hide-content');
             }, 300);
-        };
+        }
 
-        // تفعيل اللغة عند فتح النافذة
-        window.onload = applyLanguage;
+        applyLanguage();
     </script>
 </body>
-</html>
 </html>
