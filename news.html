@@ -10,17 +10,19 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; outline: 0; }
         
+        /* تم إصلاح المشكلة هنا بإزالة 100vh والـ flex لتجنب اهتزاز الـ WebView */
         body { 
             font-family: 'Tajawal', system-ui, sans-serif; 
-            background-color: transparent !important; /* خلفية شفافة */
-            display: flex; justify-content: center; align-items: center; 
-            min-height: 100vh; overflow: hidden; padding: 16px;
+            background-color: transparent !important; 
+            padding: 16px;
+            margin: 0;
         }
 
-        /* البطاقة الرئيسية بنفس ستايل صفحة التحديث */
+        /* تم إضافة margin: 0 auto لضمان توسيط البطاقة أفقياً */
         .card { 
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px; 
             padding: 25px 25px; width: 100%; max-width: 360px; 
+            margin: 0 auto; 
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             display: flex; flex-direction: column; max-height: 85vh;
             animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -31,7 +33,6 @@
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        /* الترويسة (Header) */
         .update-box-wrap { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 20px; }
         .brand-badge { 
             width: 55px; height: 55px; background: #fff; border-radius: 50%; 
@@ -44,7 +45,6 @@
         .u-title-clean { font-size: 20px; font-weight: 800; color: #1d1b20; margin-bottom: 2px; letter-spacing: -0.5px; }
         .u-sub-clean { font-size: 11.5px; color: #7d6b52; font-weight: 600; line-height: 1.5; }
 
-        /* صندوق الأخبار (Changelog Style) */
         .changelog-container { 
             background: #faf9f7; border: 1px solid #f0ece4; border-radius: 16px; 
             padding: 16px; margin-bottom: 20px; text-align: start; 
@@ -55,7 +55,6 @@
         }
         .changelog-title i { color: #b8935a; font-size: 14px; }
 
-        /* قائمة الأخبار (Scrollable) */
         .changelog-list { 
             list-style: none; display: flex; flex-direction: column; gap: 14px; 
             max-height: 280px; overflow-y: auto; padding-left: 5px;
@@ -86,7 +85,6 @@
         .cl-title { font-size: 13.5px; font-weight: 800; color: #1d1b20; margin-bottom: 4px; line-height: 1.4; }
         .cl-desc { font-size: 11.5px; color: #4a453f; font-weight: 600; line-height: 1.6; }
 
-        /* زر الإغلاق */
         .btn-close { 
             position: relative; background: linear-gradient(135deg, #1d1b20 0, #2f2a24 50%, #1d1b20 100%); 
             background-size: 200% auto; color: #fff; border-radius: 16px; font-weight: 700; 
@@ -122,10 +120,9 @@
                     <div class="cl-content">
                         <span class="cl-tag success">جديد - الإصدار v13.7</span>
                         <div class="cl-title">أداء أسرع واستقرار أعلى</div>
-                        <div class="cl-desc">تم تحسين خوارزمية الاتصال بالسيرفر لضمان استجابة أسرع بنسبة 40% للحصول على أولوية في الطلبات.</div>
+                        <div class="cl-desc">تم تحسين خوارزمية الاتصال بالسيرفر لضمان استجابة أسرع بنسبة **40%** للحصول على أولوية في الطلبات.</div>
                     </div>
                 </li>
-
 
             </ul>
         </div>
@@ -137,20 +134,9 @@
     </div>
 
     <script>
-        // إرسال أمر الإغلاق لتطبيق الأندرويد فوراً
         function closeDialog() {
             window.location.href = "ninja://close";
         }
     </script>
 </body>
-</html>
-</html>
-    <script>
-        // إرسال أمر الإغلاق لتطبيق الأندرويد فوراً
-        function closeDialog() {
-            window.location.href = "ninja://close";
-        }
-    </script>
-</body>
-</html>
 </html>
