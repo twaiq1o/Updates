@@ -295,7 +295,13 @@
             return null;
         }
 
-        let currentLang = getState('ninjaNewsLangV2') || 'ar';
+const getDeviceLang = () => {
+    const lang = navigator.language || navigator.userLanguage;
+    return lang.startsWith('en') ? 'en' : 'ar';
+};
+
+let currentLang = getState('ninjaNewsLangV2') || getDeviceLang();
+
 
         function applyLanguage() {
             const d = LANG_DICT[currentLang];
