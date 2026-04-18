@@ -109,8 +109,8 @@
             animation: floatingIcon 3s ease-in-out infinite; 
         }
         .cl-content { display: flex; flex-direction: column; width: 100%; }
-        .cl-title { font-size: 12px; font-weight: 800; color: #1d1b20; margin-bottom: 4px; line-height: 1.4; }
-        .cl-desc { font-size: 10px; color: #4a453f; font-weight: 600; line-height: 1.6; }
+        .cl-title { font-size: 13.5px; font-weight: 800; color: #1d1b20; margin-bottom: 4px; line-height: 1.4; }
+        .cl-desc { font-size: 11.5px; color: #4a453f; font-weight: 600; line-height: 1.6; }
 
         .like-container { 
             display: flex; align-items: center; gap: 6px; margin-top: 8px; 
@@ -203,7 +203,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getDatabase, ref, onValue, runTransaction, goOffline, goOnline } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDuWatMSvdlLcHyqkiDvu6KLyRUOf0GCUg",
@@ -219,28 +219,9 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        function killConnection() {
-            try { goOffline(database); } catch(e) {}
-        }
-
-        function restoreConnection() {
-            try { goOnline(database); } catch(e) {}
-        }
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                killConnection();
-            } else {
-                restoreConnection();
-            }
-        });
-
-        window.addEventListener('pagehide', killConnection);
-        window.addEventListener('unload', killConnection);
-
+        // واجهة المستخدم (اللغة والإغلاق)
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.getElementById('closeBtn').addEventListener('click', function() {
-            killConnection();
             window.location.href = "ninja://close";
         });
 
@@ -267,43 +248,11 @@
             }
         };
 
-        let memoryLikes = {};
-
-        function saveState(key, value) {
-            try { localStorage.setItem(key, value); } catch(e) {}
-            try {
-                let d = new Date(); d.setTime(d.getTime() + (365*24*60*60*1000));
-                document.cookie = key + "=" + value + ";expires=" + d.toUTCString() + ";path=/";
-            } catch(e) {}
-        }
-
-        function removeState(key) {
-            try { localStorage.removeItem(key); } catch(e) {}
-            try { document.cookie = key + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;"; } catch(e) {}
-        }
-
-        function getState(key) {
-            try { let v = localStorage.getItem(key); if(v) return v; } catch(e) {}
-            try {
-                let name = key + "=";
-                let ca = document.cookie.split(';');
-                for(let i=0; i<ca.length; i++) {
-                    let c = ca[i].trim();
-                    if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
-                }
-            } catch(e) {}
-            return null;
-        }
-        
-        
-const getDeviceLang = () => {
-    const lang = (navigator.language || navigator.userLanguage).slice(0, 2);
-    return lang === 'en' ? 'en' : 'ar';
-};
-
-
-let currentLang = getState('ninjaNewsLangV2') || getDeviceLang();
-
+        let currentLang = 'ar';
+        try {
+            let savedLang = localStorage.getItem('ninjaNewsLangV2');
+            if (savedLang) currentLang = savedLang;
+        } catch (e) {}
 
         function applyLanguage() {
             const d = LANG_DICT[currentLang];
@@ -314,15 +263,17 @@ let currentLang = getState('ninjaNewsLangV2') || getDeviceLang();
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
+            
             document.getElementById('cTitNew').innerText = d.cTitNew;
             document.getElementById('cDesNew').innerText = d.cDesNew;
+            
             document.getElementById('cTitOld').innerText = d.cTitOld;
             document.getElementById('cDesOld').innerText = d.cDesOld;
         }
 
         document.getElementById('langBtn').addEventListener('click', function() {
             currentLang = LANG_DICT[currentLang].opp;
-            saveState('ninjaNewsLangV2', currentLang);
+            try { localStorage.setItem('ninjaNewsLangV2', currentLang); } catch (e) {}
             
             let globe = document.getElementById('globeIcon');
             globe.style.transform = globe.style.transform === 'rotate(360deg)' ? 'rotate(0deg)' : 'rotate(360deg)';
@@ -338,6 +289,7 @@ let currentLang = getState('ninjaNewsLangV2') || getDeviceLang();
 
         applyLanguage();
 
+        // جلب الإعجابات من فايربيس
         function fetchInitialLikes() {
             const likesRef = ref(database, 'news_likes');
             
@@ -348,7 +300,7 @@ let currentLang = getState('ninjaNewsLangV2') || getDeviceLang();
             });
 
             ['news1', 'news2'].forEach(newsId => {
-                let isLiked = getState('liked_' + newsId) === 'true' || memoryLikes[newsId] === true;
+                let isLiked = localStorage.getItem('liked_' + newsId) === 'true';
                 if (isLiked) {
                     let container = document.getElementById('like-' + newsId);
                     let icon = document.getElementById('icon-' + newsId);
@@ -359,26 +311,25 @@ let currentLang = getState('ninjaNewsLangV2') || getDeviceLang();
             });
         }
 
+        // دالة التفاعل مع الإعجاب (مرفوعة لـ window لتكون متاحة للـ HTML)
         window.toggleLike = function(newsId) {
-            let isLiked = getState('liked_' + newsId) === 'true' || memoryLikes[newsId] === true;
+            let isLiked = localStorage.getItem('liked_' + newsId) === 'true';
             const newsRef = ref(database, 'news_likes/' + newsId);
             
             let container = document.getElementById('like-' + newsId);
             let icon = document.getElementById('icon-' + newsId);
 
             if (isLiked) {
+                // إلغاء الإعجاب
                 runTransaction(newsRef, (currentLikes) => (currentLikes || 1) - 1);
-                removeState('liked_' + newsId);
-                memoryLikes[newsId] = false;
-
+                localStorage.removeItem('liked_' + newsId);
                 container.classList.remove('liked');
                 icon.classList.remove('fas');
                 icon.classList.add('far');
             } else {
+                // إضافة إعجاب
                 runTransaction(newsRef, (currentLikes) => (currentLikes || 0) + 1);
-                saveState('liked_' + newsId, 'true');
-                memoryLikes[newsId] = true;
-
+                localStorage.setItem('liked_' + newsId, 'true');
                 container.classList.add('liked');
                 icon.classList.remove('far');
                 icon.classList.add('fas');
