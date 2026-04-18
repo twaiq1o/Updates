@@ -52,18 +52,6 @@
         .lang-toggle:active { transform: scale(.95); }
         #globeIcon { color: #7d6b52; transition: transform .6s ease; }
 
-        .telegram-badge {
-            position: absolute; top: 20px; right: 20px; 
-            background: #2aabee; color: #fff; 
-            padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; 
-            text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 8px; 
-            box-shadow: 0 4px 12px rgba(42,171,238,0.3); transition: transform .2s, box-shadow .2s; 
-            z-index: 20; direction: ltr; font-family: inherit;
-        }
-        
-        .telegram-badge:active { transform: scale(.95); }
-        .telegram-badge:hover { box-shadow: 0 6px 15px rgba(42,171,238,0.4); }
-
         .content-transition {
             display: flex; flex-direction: column; height: 100%;
             transition: opacity 0.3s ease, transform 0.3s ease;
@@ -153,11 +141,6 @@
             <span id="langText" style="margin-top: 2px;">English</span>
         </button>
 
-        <a href="https://t.me/s/NinjaTwaiq" class="telegram-badge">
-            <i class="fab fa-telegram-plane"></i> 
-            <span id="tgText" style="margin-top: 2px;">قناة التلقرام</span>
-        </a>
-
         <div id="contentTransition" class="content-transition">
             <div class="update-box-wrap">
                 <div class="brand-badge"><i class="far fa-newspaper"></i></div>
@@ -200,8 +183,7 @@
                 upTitle: 'آخر الأخبار',
                 btn: 'حسناً',
                 cTit: 'إطلاق الإصدار الجديد v13.7',
-                cDes: 'أصبحت خريطة الموقع تدعم الآن نظام "النقاط الحرارية"، لتسهيل اختيار موقعك بالقرب من المطاعم ذات الطلب العالي. كما يتضمن التحديث قسماً جديداً لآخر الأخبار، إلى جانب تحسينات شاملة لضمان استقرار وسرعة التطبيق',
-                tg: 'قناة التلقرام'
+                cDes: 'أصبحت خريطة الموقع تدعم الآن نظام "النقاط الحرارية"، لتسهيل اختيار موقعك بالقرب من المطاعم ذات الطلب العالي. كما يتضمن التحديث قسماً جديداً لآخر الأخبار، إلى جانب تحسينات شاملة لضمان استقرار وسرعة التطبيق' 
             },
             en: {
                 dir: 'ltr', opp: 'ar', langT: 'العربية',
@@ -209,8 +191,7 @@
                 upTitle: 'Latest News',
                 btn: 'OK',
                 cTit: 'Version v13.7 Released',
-                cDes: 'The location map now supports a "Heatmap" system, making it easier to select your location near high-demand restaurants. This update also includes a new Latest News section and comprehensive improvements for app stability and speed',
-                tg: 'Telegram Channel'
+                cDes: 'The location map now supports a "Heatmap" system, making it easier to select your location near high-demand restaurants. This update also includes a new Latest News section and comprehensive improvements for app stability and speed'
             }
         };
 
@@ -239,7 +220,6 @@
             document.getElementById('btnText').innerText = d.btn;
             document.getElementById('cTitle').innerText = d.cTit;
             document.getElementById('cDesc').innerText = d.cDes;
-            document.getElementById('tgText').innerText = d.tg;
         }
 
         document.getElementById('langBtn').addEventListener('click', function() {
@@ -262,5 +242,7 @@
 
         applyLanguage();
     </script>
+</body>
+</html>
 </body>
 </html>
