@@ -10,40 +10,32 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; outline: 0; }
         
-        /* إزالة أي flex أو vh من الـ body لمنع اهتزاز الـ WebView */
-        html, body { 
-            width: 100%;
+        body { 
             font-family: 'Tajawal', system-ui, sans-serif; 
             background-color: transparent !important; 
-        }
-
-        /* حاوية لتوسيط البطاقة بدلاً من الـ body */
-        .card-wrapper {
             padding: 16px;
-            margin: 0 auto;
-            width: 100%;
-            max-width: 360px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
         }
 
+        /* السر هنا: ارتفاع ثابت قطعي 450 بيكسل يمنع النظام من إعادة الحساب والاهتزاز */
         .card { 
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px; 
-            padding: 25px 25px; width: 100%; 
+            padding: 25px; width: 100%; max-width: 360px; 
+            height: 450px; 
+            margin: 0 auto; 
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
-            display: flex; flex-direction: column;
-            
-            /* إخفاء البطاقة وتصغيرها مبدئياً حتى تكتمل الخطوط */
-            opacity: 0;
-            transform: scale(0.95) translateY(10px);
-            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; 
+            animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* هذا الكلاس سيتم إضافته بواسطة الجافاسكربت بعد اكتمال التحميل */
-        .card.show-animated {
-            opacity: 1;
-            transform: scale(1) translateY(0);
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        .update-box-wrap { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 20px; }
+        .update-box-wrap { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 20px; flex-shrink: 0; }
         .brand-badge { 
             width: 55px; height: 55px; background: #fff; border-radius: 50%; 
             display: flex; justify-content: center; align-items: center; 
@@ -57,24 +49,35 @@
 
         .changelog-container { 
             background: #faf9f7; border: 1px solid #f0ece4; border-radius: 16px; 
-            padding: 16px; margin-bottom: 20px; text-align: start; 
+            padding: 16px; text-align: start; 
+            display: flex; flex-direction: column;
+            flex-grow: 1; /* تأخذ باقي المساحة تلقائياً */
+            overflow: hidden;
+            margin-bottom: 15px;
         }
         .changelog-title { 
             font-size: 12px; font-weight: 800; color: #1d1b20; margin-bottom: 15px; 
-            display: flex; align-items: center; gap: 6px; 
+            display: flex; align-items: center; gap: 6px; flex-shrink: 0;
         }
         .changelog-title i { color: #b8935a; font-size: 14px; }
 
+        /* منطقة السكرول للأخبار */
         .changelog-list { 
             list-style: none; display: flex; flex-direction: column; gap: 14px; 
-            max-height: 280px; overflow-y: auto; padding-left: 5px;
+            overflow-y: auto; padding-left: 5px; flex-grow: 1;
         }
         .changelog-list::-webkit-scrollbar { width: 4px; }
         .changelog-list::-webkit-scrollbar-thumb { background: #e4ddd4; border-radius: 10px; }
         
         .changelog-list li { 
             display: flex; align-items: flex-start; gap: 10px; 
+            opacity: 0; transform: translateX(10px); 
+            animation: slideInRight 0.5s cubic-bezier(0.2, 1, 0.3, 1) forwards; 
         }
+        .changelog-list li:nth-child(1) { animation-delay: 0.1s; }
+        .changelog-list li:nth-child(2) { animation-delay: 0.2s; }
+
+        @keyframes slideInRight { to { opacity: 1; transform: translateX(0); } }
 
         .cl-icon { color: #b8935a; font-size: 14px; margin-top: 4px; }
         .cl-content { display: flex; flex-direction: column; }
@@ -83,7 +86,6 @@
             color: #b8935a; padding: 3px 8px; border-radius: 8px; 
             align-self: flex-start; margin-bottom: 6px; letter-spacing: 0.5px;
         }
-        .cl-tag.alert { background: rgba(211,47,47,.1); color: #d32f2f; }
         .cl-tag.success { background: rgba(37,211,102,.1); color: #1b9e4b; }
         .cl-title { font-size: 13.5px; font-weight: 800; color: #1d1b20; margin-bottom: 4px; line-height: 1.4; }
         .cl-desc { font-size: 11.5px; color: #4a453f; font-weight: 600; line-height: 1.6; }
@@ -94,70 +96,45 @@
             height: 50px; min-height: 50px; border: 1px solid rgba(184,147,90,.5); 
             display: flex; justify-content: center; align-items: center; gap: 8px; 
             width: 100%; cursor: pointer; font-family: inherit; font-size: 14.5px;
-            transition: all 0.2s; flex-shrink: 0; box-shadow: 0 4px 15px rgba(29,27,32,.15);
+            flex-shrink: 0; box-shadow: 0 4px 15px rgba(29,27,32,.15);
         }
         .btn-close:active { transform: scale(0.96); box-shadow: 0 2px 8px rgba(29,27,32,.1); }
     </style>
 </head>
 <body>
 
-    <div class="card-wrapper">
-        <div class="card" id="mainCard">
-            
-            <div class="update-box-wrap">
-                <div class="brand-badge">
-                    <i class="far fa-newspaper"></i>
-                </div>
-                <div class="update-txt-area">
-                    <h3 class="u-title-clean">مركز الإشعارات</h3>
-                    <p class="u-sub-clean">تابع أحدث الأخبار والتنبيهات</p>
-                </div>
+    <div class="card">
+        <div class="update-box-wrap">
+            <div class="brand-badge"><i class="far fa-newspaper"></i></div>
+            <div class="update-txt-area">
+                <h3 class="u-title-clean">مركز الإشعارات</h3>
+                <p class="u-sub-clean">تابع أحدث الأخبار والتنبيهات</p>
             </div>
-
-            <div class="changelog-container">
-                <div class="changelog-title"><i class="fas fa-bolt"></i> <span>آخر التحديثات</span></div>
-                
-                <ul class="changelog-list">
-                    <li>
-                        <i class="fas fa-rocket cl-icon"></i>
-                        <div class="cl-content">
-                            <span class="cl-tag success">جديد - الإصدار v13.7</span>
-                            <div class="cl-title">أداء أسرع واستقرار أعلى</div>
-                            <div class="cl-desc">تم تحسين خوارزمية الاتصال بالسيرفر لضمان استجابة أسرع بنسبة 40% للحصول على أولوية في الطلبات.</div>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-
-            <button class="btn-close" onclick="closeDialog()">
-                <i class="fas fa-check-circle"></i> حسناً، إغلاق النافذة
-            </button>
-
         </div>
+
+        <div class="changelog-container">
+            <div class="changelog-title"><i class="fas fa-bolt"></i> <span>آخر التحديثات</span></div>
+            <ul class="changelog-list">
+                <li>
+                    <i class="fas fa-rocket cl-icon"></i>
+                    <div class="cl-content">
+                        <span class="cl-tag success">جديد - الإصدار v13.7</span>
+                        <div class="cl-title">أداء أسرع واستقرار أعلى</div>
+                        <div class="cl-desc">تم تحسين خوارزمية الاتصال بالسيرفر لضمان استجابة أسرع بنسبة 40% للحصول على أولوية في الطلبات.</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <button class="btn-close" onclick="closeDialog()">
+            <i class="fas fa-check-circle"></i> حسناً، إغلاق النافذة
+        </button>
     </div>
 
     <script>
-        // دالة لإغلاق النافذة
         function closeDialog() {
             window.location.href = "ninja://close";
         }
-
-        // الخدعة هنا: ننتظر حتى يكتمل تحميل الخطوط وكل شيء في الصفحة
-        window.addEventListener('load', function() {
-            if (document.fonts && document.fonts.ready) {
-                document.fonts.ready.then(function() {
-                    // نعطي الأندرويد جزء من الثانية ليثبت أبعاده ثم نظهر البطاقة
-                    setTimeout(function() {
-                        document.getElementById('mainCard').classList.add('show-animated');
-                    }, 50);
-                });
-            } else {
-                // للمتصفحات القديمة التي لا تدعم فحص الخطوط
-                setTimeout(function() {
-                    document.getElementById('mainCard').classList.add('show-animated');
-                }, 200);
-            }
-        });
     </script>
 </body>
 </html>
