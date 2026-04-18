@@ -108,9 +108,26 @@
             color: #b8935a; font-size: 15px; margin-top: 2px; 
             animation: floatingIcon 3s ease-in-out infinite; 
         }
-        .cl-content { display: flex; flex-direction: column; }
+        .cl-content { display: flex; flex-direction: column; width: 100%; }
         .cl-title { font-size: 13.5px; font-weight: 800; color: #1d1b20; margin-bottom: 4px; line-height: 1.4; }
         .cl-desc { font-size: 11.5px; color: #4a453f; font-weight: 600; line-height: 1.6; }
+
+        .like-container { 
+            display: flex; align-items: center; gap: 6px; margin-top: 8px; 
+            cursor: pointer; color: #a59b8d; transition: all 0.3s ease; 
+            width: fit-content; 
+        }
+        .like-container.liked { color: #ff4757; }
+        .like-container i { font-size: 15px; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .like-container:active i { transform: scale(0.7); }
+        .like-container.liked i { animation: popHeart 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .like-count { font-size: 11px; font-weight: 800; }
+
+        @keyframes popHeart {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1); }
+        }
 
         .btn-close-modern {
             position: relative; background: #1d1b20; color: #fff; border-radius: 16px; font-weight: 700; 
@@ -158,6 +175,10 @@
                         <div class="cl-content">
                             <div class="cl-title" id="cTitNew">تجربة أسرع وأكثر سلاسة</div>
                             <div class="cl-desc" id="cDesNew">تم تحسين أداء التطبيق ليكون أخف وزناً وأسرع استجابة، مما يمنحك تجربة استخدام وتصفح في قمة السلاسة.</div>
+                            <div class="like-container" id="like-news1" onclick="window.toggleLike('news1')">
+                                <i class="far fa-heart" id="icon-news1"></i>
+                                <span class="like-count" id="count-news1">0</span>
+                            </div>
                         </div>
                     </li>
                     <li>
@@ -165,6 +186,10 @@
                         <div class="cl-content">
                             <div class="cl-title" id="cTitOld">إطلاق الإصدار الجديد v13.7</div>
                             <div class="cl-desc" id="cDesOld">أصبحت خريطة الموقع تدعم الآن نظام "النقاط الحرارية"، لتسهيل اختيار موقعك بالقرب من المطاعم ذات الطلب العالي.</div>
+                            <div class="like-container" id="like-news2" onclick="window.toggleLike('news2')">
+                                <i class="far fa-heart" id="icon-news2"></i>
+                                <span class="like-count" id="count-news2">0</span>
+                            </div>
                         </div>
                     </li>
                 </ul>
@@ -176,9 +201,25 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('contextmenu', e => e.preventDefault());
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuWatMSvdlLcHyqkiDvu6KLyRUOf0GCUg",
+            authDomain: "countertwaiq.firebaseapp.com",
+            databaseURL: "https://countertwaiq-default-rtdb.firebaseio.com",
+            projectId: "countertwaiq",
+            storageBucket: "countertwaiq.firebasestorage.app",
+            messagingSenderId: "964088071282",
+            appId: "1:964088071282:web:f90b79d2bcdf17276faeeb",
+            measurementId: "G-853JKE00G2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        document.addEventListener('contextmenu', e => e.preventDefault());
         document.getElementById('closeBtn').addEventListener('click', function() {
             window.location.href = "ninja://close";
         });
@@ -209,16 +250,8 @@
         let currentLang = 'ar';
         try {
             let savedLang = localStorage.getItem('ninjaNewsLangV2');
-            if (savedLang) {
-                currentLang = savedLang;
-            } else {
-                let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-                currentLang = sysLang.startsWith('en') ? 'en' : 'ar';
-            }
-        } catch (e) {
-            let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-            currentLang = sysLang.startsWith('en') ? 'en' : 'ar';
-        }
+            if (savedLang) currentLang = savedLang;
+        } catch (e) {}
 
         function applyLanguage() {
             const d = LANG_DICT[currentLang];
@@ -230,10 +263,8 @@
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
             
-            
             document.getElementById('cTitNew').innerText = d.cTitNew;
             document.getElementById('cDesNew').innerText = d.cDesNew;
-            
             
             document.getElementById('cTitOld').innerText = d.cTitOld;
             document.getElementById('cDesOld').innerText = d.cDesOld;
@@ -241,9 +272,7 @@
 
         document.getElementById('langBtn').addEventListener('click', function() {
             currentLang = LANG_DICT[currentLang].opp;
-            try {
-                localStorage.setItem('ninjaNewsLangV2', currentLang);
-            } catch (e) {}
+            try { localStorage.setItem('ninjaNewsLangV2', currentLang); } catch (e) {}
             
             let globe = document.getElementById('globeIcon');
             globe.style.transform = globe.style.transform === 'rotate(360deg)' ? 'rotate(0deg)' : 'rotate(360deg)';
@@ -258,6 +287,51 @@
         });
 
         applyLanguage();
+
+        function fetchInitialLikes() {
+            const likesRef = ref(database, 'news_likes');
+            
+            onValue(likesRef, (snapshot) => {
+                const data = snapshot.val() || {};
+                document.getElementById('count-news1').innerText = data.news1 || 0;
+                document.getElementById('count-news2').innerText = data.news2 || 0;
+            });
+
+            ['news1', 'news2'].forEach(newsId => {
+                let isLiked = localStorage.getItem('liked_' + newsId) === 'true';
+                if (isLiked) {
+                    let container = document.getElementById('like-' + newsId);
+                    let icon = document.getElementById('icon-' + newsId);
+                    container.classList.add('liked');
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                }
+            });
+        }
+
+        window.toggleLike = function(newsId) {
+            let isLiked = localStorage.getItem('liked_' + newsId) === 'true';
+            const newsRef = ref(database, 'news_likes/' + newsId);
+            
+            let container = document.getElementById('like-' + newsId);
+            let icon = document.getElementById('icon-' + newsId);
+
+            if (isLiked) {
+                runTransaction(newsRef, (currentLikes) => (currentLikes || 1) - 1);
+                localStorage.removeItem('liked_' + newsId);
+                container.classList.remove('liked');
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+            } else {
+                runTransaction(newsRef, (currentLikes) => (currentLikes || 0) + 1);
+                localStorage.setItem('liked_' + newsId, 'true');
+                container.classList.add('liked');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+            }
+        };
+
+        fetchInitialLikes();
     </script>
 </body>
 </html>
