@@ -203,7 +203,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        import { getDatabase, ref, onValue, runTransaction, goOffline } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDuWatMSvdlLcHyqkiDvu6KLyRUOf0GCUg",
@@ -221,6 +221,7 @@
 
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.getElementById('closeBtn').addEventListener('click', function() {
+            try { goOffline(database); } catch(e) {}
             window.location.href = "ninja://close";
         });
 
