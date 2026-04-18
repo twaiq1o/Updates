@@ -219,20 +219,6 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        let currentLang = 'ar';
-        try {
-            let savedLang = localStorage.getItem('ninjaNewsLangV2');
-            if (savedLang) {
-                currentLang = savedLang;
-            } else {
-                let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-                currentLang = sysLang.startsWith('en') ? 'en' : 'ar';
-            }
-        } catch (e) {
-            let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-            currentLang = sysLang.startsWith('en') ? 'en' : 'ar';
-        }
-
         function killConnection() {
             try { goOffline(database); } catch(e) {}
         }
@@ -285,15 +271,39 @@
 
         function saveState(key, value) {
             try { localStorage.setItem(key, value); } catch(e) {}
+            try {
+                let d = new Date(); d.setTime(d.getTime() + (365*24*60*60*1000));
+                document.cookie = key + "=" + value + ";expires=" + d.toUTCString() + ";path=/";
+            } catch(e) {}
         }
 
         function removeState(key) {
             try { localStorage.removeItem(key); } catch(e) {}
+            try { document.cookie = key + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;"; } catch(e) {}
         }
 
         function getState(key) {
-            try { return localStorage.getItem(key); } catch(e) { return null; }
+            try { let v = localStorage.getItem(key); if(v) return v; } catch(e) {}
+            try {
+                let name = key + "=";
+                let ca = document.cookie.split(';');
+                for(let i=0; i<ca.length; i++) {
+                    let c = ca[i].trim();
+                    if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
+                }
+            } catch(e) {}
+            return null;
         }
+        
+        
+const getDeviceLang = () => {
+    const lang = (navigator.language || navigator.userLanguage).slice(0, 2);
+    return lang === 'en' ? 'en' : 'ar';
+};
+
+
+let currentLang = getState('ninjaNewsLangV2') || getDeviceLang();
+
 
         function applyLanguage() {
             const d = LANG_DICT[currentLang];
@@ -330,36 +340,48 @@
 
         function fetchInitialLikes() {
             const likesRef = ref(database, 'news_likes');
+            
             onValue(likesRef, (snapshot) => {
                 const data = snapshot.val() || {};
                 document.getElementById('count-news1').innerText = data.news1 || 0;
                 document.getElementById('count-news2').innerText = data.news2 || 0;
             });
+
             ['news1', 'news2'].forEach(newsId => {
-                if (getState('liked_' + newsId) === 'true') {
+                let isLiked = getState('liked_' + newsId) === 'true' || memoryLikes[newsId] === true;
+                if (isLiked) {
                     let container = document.getElementById('like-' + newsId);
                     let icon = document.getElementById('icon-' + newsId);
                     container.classList.add('liked');
-                    icon.classList.replace('far', 'fas');
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
                 }
             });
         }
 
         window.toggleLike = function(newsId) {
-            let isLiked = getState('liked_' + newsId) === 'true';
+            let isLiked = getState('liked_' + newsId) === 'true' || memoryLikes[newsId] === true;
             const newsRef = ref(database, 'news_likes/' + newsId);
+            
             let container = document.getElementById('like-' + newsId);
             let icon = document.getElementById('icon-' + newsId);
+
             if (isLiked) {
-                runTransaction(newsRef, (c) => (c || 1) - 1);
+                runTransaction(newsRef, (currentLikes) => (currentLikes || 1) - 1);
                 removeState('liked_' + newsId);
+                memoryLikes[newsId] = false;
+
                 container.classList.remove('liked');
-                icon.classList.replace('fas', 'far');
+                icon.classList.remove('fas');
+                icon.classList.add('far');
             } else {
-                runTransaction(newsRef, (c) => (c || 0) + 1);
+                runTransaction(newsRef, (currentLikes) => (currentLikes || 0) + 1);
                 saveState('liked_' + newsId, 'true');
+                memoryLikes[newsId] = true;
+
                 container.classList.add('liked');
-                icon.classList.replace('far', 'fas');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
             }
         };
 
