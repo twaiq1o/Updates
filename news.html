@@ -11,6 +11,7 @@
         * { 
             box-sizing: border-box; margin: 0; padding: 0; 
             -webkit-tap-highlight-color: transparent; outline: 0; 
+            -webkit-touch-callout: none;
         }
         
         body { 
@@ -20,7 +21,6 @@
             margin: 0;
             display: flex;
             justify-content: center;
-            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
         }
 
         .card { 
@@ -34,6 +34,7 @@
             display: flex; flex-direction: column; 
             animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             overflow: hidden;
+            -webkit-user-select: none; user-select: none;
         }
 
         @keyframes popIn {
@@ -146,7 +147,8 @@
             width: 100%; flex-grow: 1; border: 1px solid #e4ddd4; border-radius: 16px;
             padding: 15px; font-family: inherit; font-size: 13px; resize: none;
             margin-bottom: 15px; background: #faf9f7; color: #1d1b20;
-            -webkit-user-select: auto; user-select: auto;
+            -webkit-user-select: text !important; user-select: text !important;
+            pointer-events: auto !important;
         }
         
         .feedback-textarea:focus { border-color: #b8935a; background: #fff; }
@@ -285,9 +287,6 @@
         document.getElementById('openFeedbackBtn').addEventListener('click', () => {
             feedbackModal.classList.add('active');
             feedbackText.value = '';
-            setTimeout(() => {
-                feedbackText.focus();
-            }, 300);
         });
 
         document.getElementById('cancelBtn').addEventListener('click', () => {
