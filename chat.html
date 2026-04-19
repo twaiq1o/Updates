@@ -18,7 +18,7 @@
 
         .chat-card {
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
-            width: 100%; max-width: 360px; height: 530px;
+            width: 100%; max-width: 360px; height: 100%; max-height: 530px;
             display: flex; flex-direction: column;
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             overflow: hidden; position: relative;
@@ -230,6 +230,14 @@
                 }[tag] || tag)
             );
         }
+            
+        msgTextInput.addEventListener('focus', () => {
+            setTimeout(() => {
+                msgTextInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 300);
+        });
+
     </script>
 </body>
 </html>
