@@ -97,6 +97,16 @@
             opacity: 0; transform: translateX(10px); 
             animation: slideInRight 0.5s cubic-bezier(0.2, 1, 0.3, 1) forwards; 
         }
+
+        .changelog-list li.special-news-item {
+            background: #fffdf9;
+            border: 1px solid rgba(184,147,90,0.4);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(184,147,90,0.06);
+            margin-bottom: 2px;
+        }
+
         html[dir="ltr"] .changelog-list li { transform: translateX(-10px); animation-name: slideInLeft; }
         .changelog-list li:nth-child(1) { animation-delay: 0.1s; }
         .changelog-list li:nth-child(2) { animation-delay: 0.2s; }
@@ -109,8 +119,19 @@
             color: #b8935a; font-size: 15px; margin-top: 2px; 
             animation: floatingIcon 3s ease-in-out infinite; 
         }
+        
+        .special-news-item .cl-icon {
+            font-size: 18px;
+            color: #b8935a;
+        }
+
         .cl-content { display: flex; flex-direction: column; width: 100%; }
         .cl-title { font-size: 12px; font-weight: 800; color: #1d1b20; margin-bottom: 4px; line-height: 1.4; }
+        
+        .special-news-item .cl-title {
+            color: #b8935a;
+        }
+
         .cl-desc { font-size: 10px; color: #4a453f; font-weight: 600; line-height: 1.6; }
 
         .like-container { 
@@ -129,19 +150,6 @@
             50% { transform: scale(1.4); }
             100% { transform: scale(1); }
         }
-
-        .btn-chat {
-            position: relative; background: #fff; color: #1d1b20; border-radius: 16px; font-weight: 700; 
-            height: 50px; min-height: 50px; border: 1px solid #e4ddd4; 
-            transition: all 0.3s ease; 
-            display: flex; justify-content: center; align-items: center; gap: 8px;
-            width: 100%; cursor: pointer; font-family: inherit; font-size: 15px; flex-shrink: 0; z-index: 1;
-            margin-bottom: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-        }
-        .btn-chat:hover { border-color: #b8935a; color: #b8935a; }
-        .btn-chat:active { transform: translateY(0) scale(0.96); }
-        .btn-chat i { font-size: 18px; color: #b8935a; }
 
         .btn-close-modern {
             position: relative; background: #1d1b20; color: #fff; border-radius: 16px; font-weight: 700; 
@@ -184,8 +192,8 @@
             <div class="changelog-container">
                 <div class="changelog-title"><i class="fas fa-bolt"></i> <span id="uTitle">آخر الأخبار</span></div>
                 <ul class="changelog-list">
-                    <li>
-                        <i class="fas fa-comments cl-icon"></i>
+                    <li class="special-news-item">
+                        <i class="fas fa-bullhorn cl-icon"></i>
                         <div class="cl-content">
                             <div class="cl-title" id="cTitChat">قريباً: المحادثة الجماعية</div>
                             <div class="cl-desc" id="cDesChat">استعد لتجربة تواصل جديدة! نعمل حالياً على تطوير نظام دردشة جماعية يتيح لك التواصل المباشر مع جميع المشتركين. ترقبوا التحديث القادم.</div>
@@ -219,11 +227,6 @@
                     </li>
                 </ul>
             </div>
-
-            <button class="btn-chat" id="chatBtn">
-                <i class="fas fa-comments"></i>
-                <span id="chatBtnText">الدخول للمحادثة الجماعية</span>
-            </button>
 
             <button class="btn-close-modern" id="closeBtn">
                 <span id="btnText">حسناً</span>
@@ -269,15 +272,9 @@
         window.addEventListener('unload', killConnection);
 
         document.addEventListener('contextmenu', e => e.preventDefault());
-        
         document.getElementById('closeBtn').addEventListener('click', function() {
             killConnection();
             window.location.href = "ninja://close";
-        });
-
-        document.getElementById('chatBtn').addEventListener('click', function() {
-            const d = LANG_DICT[currentLang];
-            document.getElementById('chatBtnText').innerText = d.btnComingSoon;
         });
 
         const LANG_DICT = {
@@ -286,8 +283,6 @@
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
                 upTitle: 'آخر الأخبار',
                 btn: 'حسناً',
-                chatBtn: 'الدخول للمحادثة الجماعية',
-                btnComingSoon: 'قريباً...',
                 cTitChat: 'قريباً: المحادثة الجماعية',
                 cDesChat: 'استعد لتجربة تواصل جديدة! نعمل حالياً على تطوير نظام دردشة جماعية يتيح لك التواصل المباشر مع جميع المشتركين. ترقبوا التحديث القادم.',
                 cTitNew: 'تجربة أسرع وأكثر سلاسة',
@@ -300,10 +295,8 @@
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
                 upTitle: 'Latest News',
                 btn: 'OK',
-                chatBtn: 'Join Group Chat',
-                btnComingSoon: 'Coming Soon...',
                 cTitChat: 'Coming Soon: Group Chat',
-                cDesChat: 'Get ready for a new way to connect! We are currently developing a live group chat system to let you communicate with all users. Stay tuned.',
+                cDesChat: 'Get ready for a new way to connect! We are currently developing a live group chat system to let you communicate directly with all users. Stay tuned.',
                 cTitNew: 'Faster & Smoother Experience',
                 cDesNew: 'The app\'s performance has been optimized to be lighter and more responsive, providing you with a remarkably seamless user experience.',
                 cTitOld: 'Version v13.7 Released',
@@ -338,6 +331,7 @@
             } catch(e) {}
             return null;
         }
+
         
         let currentLang = 'ar';
         try {
@@ -362,7 +356,6 @@
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
-            document.getElementById('chatBtnText').innerText = d.chatBtn;
             document.getElementById('cTitChat').innerText = d.cTitChat;
             document.getElementById('cDesChat').innerText = d.cDesChat;
             document.getElementById('cTitNew').innerText = d.cTitNew;
@@ -437,10 +430,6 @@
             }
         };
 
-        fetchInitialLikes();
-    </script>
-</body>
-</html>
         fetchInitialLikes();
     </script>
 </body>
