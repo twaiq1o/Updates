@@ -14,6 +14,7 @@
             background-color: transparent; 
             display: flex; justify-content: center; align-items: center; 
             padding: 16px; margin: 0;
+            transition: padding 0.3s ease;
         }
 
         .chat-card {
@@ -23,6 +24,7 @@
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             overflow: hidden; position: relative;
             animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: all 0.3s ease;
         }
 
         @keyframes popIn {
@@ -34,11 +36,12 @@
             background: #fff; padding: 20px; border-bottom: 1px solid #f0ece4;
             display: flex; align-items: center; gap: 12px; z-index: 10;
             box-shadow: 0 4px 10px rgba(0,0,0,0.02); position: relative; flex-shrink: 0;
+            transition: padding 0.3s ease;
         }
 
-        .chat-header i.fa-comments { color: #b8935a; font-size: 24px; }
-        .chat-header h2 { font-size: 18px; color: #1d1b20; font-weight: 800; margin-bottom: 2px;}
-        .chat-header p { font-size: 11px; color: #7d6b52; font-weight: 600;}
+        .chat-header i.fa-comments { color: #b8935a; font-size: 24px; transition: font-size 0.3s; }
+        .chat-header h2 { font-size: 18px; color: #1d1b20; font-weight: 800; margin-bottom: 2px; transition: font-size 0.3s;}
+        .chat-header p { font-size: 11px; color: #7d6b52; font-weight: 600; transition: opacity 0.2s;}
 
         .close-btn {
             position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
@@ -56,6 +59,7 @@
             flex-grow: 1; padding: 20px; overflow-y: auto;
             display: flex; flex-direction: column; gap: 15px;
             background-color: #faf9f7;
+            transition: padding 0.3s ease;
         }
 
         .chat-messages::-webkit-scrollbar { width: 4px; }
@@ -88,6 +92,7 @@
         .chat-input-area {
             background: #fff; padding: 15px; border-top: 1px solid #f0ece4;
             display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
+            transition: padding 0.3s ease;
         }
 
         .username-container {
@@ -97,7 +102,7 @@
         .username-input {
             flex-grow: 1; padding: 10px 15px; border: 1px solid #e4ddd4;
             border-radius: 12px; font-size: 12px; font-weight: 700; color: #1d1b20;
-            background: #faf9f7; transition: border 0.3s;
+            background: #faf9f7; transition: all 0.3s;
         }
         .username-input:focus { border-color: #b8935a; outline: none; }
         .username-input:disabled { background: #f0ece4; color: #a59b8d; cursor: not-allowed; }
@@ -114,7 +119,7 @@
         .msg-input {
             flex-grow: 1; padding: 12px 15px; border: 1px solid #e4ddd4;
             border-radius: 16px; font-size: 13px; background: #faf9f7;
-            transition: border 0.3s; font-weight: 500;
+            transition: all 0.3s; font-weight: 500;
         }
         .msg-input:focus { border-color: #b8935a; outline: none; background: #fff; }
 
@@ -134,6 +139,27 @@
             pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 1000;
         }
         .toast-msg.show { opacity: 1; }
+
+        /* --- الحل الذكي: وضع "مضغوط" يعمل تلقائياً عند فتح الكيبورد --- */
+        @media screen and (max-height: 520px) {
+            body { padding: 4px; }
+            .chat-card { 
+                height: 100vh; max-height: 100vh; 
+                border-radius: 20px; 
+            }
+            .chat-header { padding: 8px 15px; }
+            .chat-header h2 { font-size: 15px; margin-bottom: 0; }
+            .chat-header p { display: none; } /* إخفاء النص الفرعي مؤقتاً */
+            .chat-header i.fa-comments { font-size: 20px; }
+            .close-btn { width: 28px; height: 28px; }
+            
+            .chat-input-area { padding: 8px 12px; gap: 6px; }
+            .username-input, .msg-input { padding: 8px 12px; font-size: 12px; }
+            .edit-name-btn, .send-btn { width: 36px; height: 36px; border-radius: 12px; }
+            .send-btn i { font-size: 14px; }
+            
+            .chat-messages { padding: 10px 15px; gap: 10px; }
+        }
 
     </style>
 </head>
@@ -192,7 +218,6 @@
         const editNameBtn = document.getElementById('editNameBtn');
         const toastMsg = document.getElementById('toastMsg');
 
-        // جلب الوقت الحقيقي من السيرفر لمنع تلاعب المستخدم
         let serverOffset = 0;
         const offsetRef = ref(db, ".info/serverTimeOffset");
         onValue(offsetRef, (snap) => {
@@ -233,10 +258,10 @@
         const savedName = localStorage.getItem('twaiqChatName');
         if (savedName) {
             userNameInput.value = savedName;
-            userNameInput.disabled = true; // إقفال الحقل إذا كان مسجلاً مسبقاً
+            userNameInput.disabled = true; 
         }
 
-        const COOLDOWN_MS = 30 * 60 * 1000; // 30 دقيقة
+        const COOLDOWN_MS = 30 * 60 * 1000; 
 
         editNameBtn.addEventListener('click', () => {
             if (!userNameInput.disabled) {
@@ -263,7 +288,6 @@
 
             if (text === '') return;
 
-            // إقفال الاسم وتخزين وقت التعديل
             if (!userNameInput.disabled) {
                 localStorage.setItem('twaiqChatName', name);
                 localStorage.setItem('twaiqNameLastEdit', getTrueServerTime().toString());
