@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>دردشة طويق</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background-color: transparent; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; padding: 16px; margin: 0;
+        }
+
+        .chat-card {
+            background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
+            width: 100%; max-width: 360px; height: 530px;
+            display: flex; flex-direction: column;
+            box-shadow: 0 15px 35px rgba(125,107,82,.15);
+            overflow: hidden; position: relative;
+            animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .chat-header {
+            background: #fff; padding: 20px; border-bottom: 1px solid #f0ece4;
+            display: flex; align-items: center; gap: 12px; z-index: 10;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); position: relative;
+        }
+
+        .chat-header i.fa-comments { color: #b8935a; font-size: 24px; }
+        .chat-header h2 { font-size: 18px; color: #1d1b20; font-weight: 800; margin-bottom: 2px;}
+        .chat-header p { font-size: 11px; color: #7d6b52; font-weight: 600;}
+
+        .close-btn {
+            position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+            background: #faf9f7; border: 1px solid #f0ece4; color: #1d1b20;
+            width: 32px; height: 32px; border-radius: 50%; display: flex;
+            justify-content: center; align-items: center; cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        html[dir="ltr"] .close-btn { left: auto; right: 20px; }
+        .close-btn:active { transform: translateY(-50%) scale(0.9); }
+        .close-btn i { font-size: 14px; }
+
+        .chat-messages {
+            flex-grow: 1; padding: 20px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 15px;
+            background-color: #faf9f7;
+        }
+
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #e4ddd4; border-radius: 10px; }
+
+        .message {
+            max-width: 85%; display: flex; flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .message .sender-name {
+            font-size: 10px; font-weight: 700; color: #a59b8d; margin-bottom: 4px;
+        }
+
+        .message .text {
+            padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.5;
+            word-wrap: break-word; font-weight: 500;
+        }
+
+        .message.mine { align-self: flex-start; }
+        .message.mine .text { background: #b8935a; color: #fff; border-bottom-right-radius: 4px; }
+        .message.mine .sender-name { text-align: right; color: #b8935a; }
+
+        .message.others { align-self: flex-end; }
+        .message.others .text { background: #fff; color: #1d1b20; border: 1px solid #f0ece4; border-bottom-left-radius: 4px; }
+        .message.others .sender-name { text-align: left; }
+
+        .chat-input-area {
+            background: #fff; padding: 15px; border-top: 1px solid #f0ece4;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .username-input {
+            width: 100%; padding: 10px 15px; border: 1px solid #e4ddd4;
+            border-radius: 12px; font-size: 12px; font-weight: 700; color: #1d1b20;
+            background: #faf9f7; transition: border 0.3s;
+        }
+        .username-input:focus { border-color: #b8935a; outline: none; }
+
+        .message-box { display: flex; gap: 8px; }
+        
+        .msg-input {
+            flex-grow: 1; padding: 12px 15px; border: 1px solid #e4ddd4;
+            border-radius: 16px; font-size: 13px; background: #faf9f7;
+            transition: border 0.3s; font-weight: 500;
+        }
+        .msg-input:focus { border-color: #b8935a; outline: none; background: #fff; }
+
+        .send-btn {
+            background: #1d1b20; color: #fff; border: none; border-radius: 16px;
+            width: 44px; height: 44px; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+        }
+        .send-btn:hover { background: #b8935a; transform: translateY(-2px); }
+        .send-btn:active { transform: scale(0.95); }
+        .send-btn i { font-size: 16px; margin-right: 2px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="chat-card">
+        <div class="chat-header">
+            <div class="close-btn" id="closeChatBtn"><i class="fas fa-times"></i></div>
+            <i class="fas fa-comments"></i>
+            <div>
+                <h2>محادثة طويق</h2>
+                <p>محادثة جماعية مباشرة</p>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatBox"></div>
+
+        <div class="chat-input-area">
+            <input type="text" id="userName" class="username-input" placeholder="اكتب اسمك المستعار هنا..." maxlength="20">
+            <div class="message-box">
+                <input type="text" id="msgText" class="msg-input" placeholder="اكتب رسالتك..." autocomplete="off">
+                <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlSb2RsFDei6KFh2VvrKyM-ydDrhxV3aE",
+            authDomain: "twaiqchat.firebaseapp.com",
+            databaseURL: "https://twaiqchat-default-rtdb.firebaseio.com",
+            projectId: "twaiqchat",
+            storageBucket: "twaiqchat.firebasestorage.app",
+            messagingSenderId: "377499668649",
+            appId: "1:377499668649:web:6aed4ccacd1b3c7dcc99b8",
+            measurementId: "G-5MYK8MHNGR"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const chatRef = ref(db, 'global_messages');
+
+        const chatBox = document.getElementById('chatBox');
+        const userNameInput = document.getElementById('userName');
+        const msgTextInput = document.getElementById('msgText');
+        const sendBtn = document.getElementById('sendBtn');
+        const closeChatBtn = document.getElementById('closeChatBtn');
+
+        closeChatBtn.addEventListener('click', function() {
+            window.location.href = "ninja://close";
+        });
+
+        const savedName = localStorage.getItem('twaiqChatName');
+        if (savedName) {
+            userNameInput.value = savedName;
+        }
+
+        function sendMessage() {
+            const name = userNameInput.value.trim() || 'ضيف';
+            const text = msgTextInput.value.trim();
+
+            if (text === '') return;
+
+            localStorage.setItem('twaiqChatName', name);
+
+            push(chatRef, {
+                sender: name,
+                text: text,
+                timestamp: serverTimestamp()
+            });
+
+            msgTextInput.value = '';
+            msgTextInput.focus();
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+
+        msgTextInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        onChildAdded(chatRef, (snapshot) => {
+            const data = snapshot.val();
+            const currentName = userNameInput.value.trim() || 'ضيف';
+            const savedLocalName = localStorage.getItem('twaiqChatName') || currentName;
+            
+            const isMine = data.sender === savedLocalName;
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${isMine ? 'mine' : 'others'}`;
+            
+            msgDiv.innerHTML = `
+                <div class="sender-name">${data.sender}</div>
+                <div class="text">${escapeHTML(data.text)}</div>
+            `;
+
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+    </script>
+</body>
+</html>
