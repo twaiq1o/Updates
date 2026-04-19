@@ -295,15 +295,19 @@
             return null;
         }
         
-        
-const getDeviceLang = () => {
-    const lang = (navigator.language || navigator.userLanguage).slice(0, 2);
-    return lang === 'en' ? 'en' : 'ar';
-};
-
-
-let currentLang = getState('ninjaNewsLangV2') || getDeviceLang();
-
+        let currentLang = 'ar';
+        try {
+            let savedLang = getState('ninjaNewsLangV2');
+            if (savedLang) {
+                currentLang = savedLang;
+            } else {
+                let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+                currentLang = sysLang.startsWith('en') ? 'en' : 'ar';
+            }
+        } catch (e) {
+            let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+            currentLang = sysLang.startsWith('en') ? 'en' : 'ar';
+        }
 
         function applyLanguage() {
             const d = LANG_DICT[currentLang];
