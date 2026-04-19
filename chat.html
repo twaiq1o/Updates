@@ -12,23 +12,34 @@
         
         body { 
             background-color: transparent; 
-            display: flex; justify-content: center; align-items: center; 
-            padding: 16px; margin: 0;
+            margin: 0; padding: 0;
+            /* هذه الخدعة تجبر الأندرويد على إبقاء النافذة كبيرة ولا تعلق أبداً */
+            min-height: 580px; 
+            width: 100vw;
             overflow: hidden;
         }
 
         .chat-card {
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
-            width: 100%; max-width: 360px; height: 550px;
+            width: calc(100% - 32px); max-width: 360px; 
+            height: 550px; 
+            
+            /* الكرت يتفاعل مع الكيبورد ديناميكياً */
+            max-height: calc(100vh - 32px);
+            max-height: calc(var(--vh, 100vh) - 32px);
+            
+            position: fixed;
+            top: 50%; left: 50%;
             display: flex; flex-direction: column;
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
-            overflow: hidden; position: relative;
+            overflow: hidden;
             animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: max-height 0.3s ease;
         }
 
         @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.95) translateY(10px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
+            0% { opacity: 0; transform: translate(-50%, -40%) scale(0.95); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
 
         .chat-header {
@@ -90,7 +101,7 @@
         .chat-input-area {
             background: #fff; padding: 15px; border-top: 1px solid #f0ece4;
             display: flex; flex-direction: column; gap: 10px; 
-            flex-shrink: 0; min-height: 100px; /* لحماية منطقة الكتابة من الانضغاط */
+            flex-shrink: 0; min-height: 90px; /* لحماية منطقة الكتابة من الانضغاط */
         }
 
         .username-container {
@@ -187,7 +198,6 @@
         const db = getDatabase(app);
         const chatRef = ref(db, 'global_messages');
 
-        const chatCard = document.getElementById('chatCard');
         const chatBox = document.getElementById('chatBox');
         const userNameInput = document.getElementById('userName');
         const msgTextInput = document.getElementById('msgText');
@@ -196,22 +206,14 @@
         const editNameBtn = document.getElementById('editNameBtn');
         const toastMsg = document.getElementById('toastMsg');
 
-        // دالة ضبط الارتفاع بذكاء عند فتح الكيبورد
-        function adjustHeight() {
-            let viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-            if (viewportHeight < 580) { 
-                chatCard.style.height = (viewportHeight - 32) + 'px'; 
-            } else {
-                chatCard.style.height = '550px';
-            }
-            setTimeout(() => { if(chatBox) chatBox.scrollTop = chatBox.scrollHeight; }, 50);
+        // قراءة الارتفاع الحقيقي بدقة لدعم جميع أجهزة الأندرويد
+        function setRealVh() {
+            let vh = window.innerHeight;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+            setTimeout(() => { if(chatBox) chatBox.scrollTop = chatBox.scrollHeight; }, 100);
         }
-
-        window.addEventListener('resize', adjustHeight);
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', adjustHeight);
-        }
-        adjustHeight();
+        window.addEventListener('resize', setRealVh);
+        setRealVh();
 
         let serverOffset = 0;
         const offsetRef = ref(db, ".info/serverTimeOffset");
