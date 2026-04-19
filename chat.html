@@ -13,12 +13,12 @@
         body { 
             background-color: transparent; 
             display: flex; justify-content: center; align-items: center; 
-            height: 100vh; padding: 16px; margin: 0;
+            padding: 16px; margin: 0;
         }
 
         .chat-card {
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
-            width: 100%; max-width: 360px; height: 100%; max-height: 530px;
+            width: 100%; max-width: 360px; height: 550px;
             display: flex; flex-direction: column;
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             overflow: hidden; position: relative;
@@ -142,7 +142,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, serverTimestamp, goOffline, goOnline } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAlSb2RsFDei6KFh2VvrKyM-ydDrhxV3aE",
@@ -165,7 +165,27 @@
         const sendBtn = document.getElementById('sendBtn');
         const closeChatBtn = document.getElementById('closeChatBtn');
 
+        function killConnection() {
+            try { goOffline(db); } catch(e) {}
+        }
+
+        function restoreConnection() {
+            try { goOnline(db); } catch(e) {}
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                killConnection();
+            } else {
+                restoreConnection();
+            }
+        });
+
+        window.addEventListener('pagehide', killConnection);
+        window.addEventListener('unload', killConnection);
+
         closeChatBtn.addEventListener('click', function() {
+            killConnection();
             window.location.href = "ninja://close";
         });
 
@@ -211,7 +231,7 @@
             msgDiv.className = `message ${isMine ? 'mine' : 'others'}`;
             
             msgDiv.innerHTML = `
-                <div class="sender-name">${data.sender}</div>
+                <div class="sender-name">${escapeHTML(data.sender)}</div>
                 <div class="text">${escapeHTML(data.text)}</div>
             `;
 
@@ -237,7 +257,6 @@
                 chatBox.scrollTop = chatBox.scrollHeight;
             }, 300);
         });
-
     </script>
 </body>
 </html>
