@@ -207,7 +207,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, serverTimestamp, goOffline, goOnline, onValue } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, serverTimestamp, goOffline, goOnline, onValue, set } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAlSb2RsFDei6KFh2VvrKyM-ydDrhxV3aE",
@@ -222,7 +222,13 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        // سحب ID المستخدم من الرابط المرسل من التطبيق
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('uid') || 'default';
+
         const chatRef = ref(db, 'global_messages');
+        const userProfileRef = ref(db, 'chat_users/' + userId);
 
         const chatBox = document.getElementById('chatBox');
         const userContainer = document.getElementById('userContainer');
@@ -241,7 +247,7 @@
                 namePlaceholder: 'اسمك...',
                 nameLabel: 'الاسم',
                 msgPlaceholder: 'اكتب رسالتك...',
-                guest: 'ضيف',
+                mustEnterName: 'يجب اختيار اسم أولاً قبل الكتابة.',
                 toastWait1: 'يرجى الانتظار ',
                 toastWait2: ' دقيقة لتعديل الاسم مجدداً.'
             },
@@ -253,7 +259,7 @@
                 namePlaceholder: 'Your name...',
                 nameLabel: 'Name',
                 msgPlaceholder: 'Type your message...',
-                guest: 'Guest',
+                mustEnterName: 'You must enter a name first.',
                 toastWait1: 'Please wait ',
                 toastWait2: ' minutes to edit name again.'
             }
@@ -336,10 +342,28 @@
             userNameInput.focus();
         }
 
-        const savedName = localStorage.getItem('twaiqChatName');
-        if (savedName) {
-            userNameInput.value = savedName;
-            lockNameInput();
+        let isNameRegistered = false;
+
+        // جلب الاسم من الفايربيس (حتى لو دخل من جوال ثاني)
+        if(userId !== 'default') {
+            onValue(userProfileRef, (snap) => {
+                if (snap.exists()) {
+                    const data = snap.val();
+                    if (data.name) {
+                        userNameInput.value = data.name;
+                        lockNameInput();
+                        isNameRegistered = true;
+                        localStorage.setItem('twaiqChatName', data.name);
+                        localStorage.setItem('twaiqNameLastEdit', data.lastEdit || '0');
+                    }
+                }
+            });
+        } else {
+            const savedName = localStorage.getItem('twaiqChatName');
+            if (savedName) {
+                userNameInput.value = savedName;
+                lockNameInput();
+            }
         }
 
         const COOLDOWN_MS = 60 * 60 * 1000; 
@@ -359,19 +383,44 @@
             }
         });
 
+        // منع الكتابة اذا لم يتم ادخال الاسم
+        msgTextInput.addEventListener('focus', () => {
+            const name = userNameInput.value.trim();
+            if (!name) {
+                msgTextInput.blur();
+                showToast(LANG_DICT[currentLang].mustEnterName);
+                userNameInput.focus();
+            }
+        });
+
         function sendMessage() {
-            const name = userNameInput.value.trim() || LANG_DICT[currentLang].guest;
+            const name = userNameInput.value.trim();
             const text = msgTextInput.value.trim();
+
+            if (!name) {
+                showToast(LANG_DICT[currentLang].mustEnterName);
+                userNameInput.focus();
+                return;
+            }
 
             if (text === '') return;
 
+            const nowTime = getTrueServerTime();
+
             if (!userNameInput.readOnly) {
                 localStorage.setItem('twaiqChatName', name);
-                localStorage.setItem('twaiqNameLastEdit', getTrueServerTime().toString());
+                localStorage.setItem('twaiqNameLastEdit', nowTime.toString());
+                
+                if(userId !== 'default') {
+                    set(userProfileRef, { name: name, lastEdit: nowTime }).catch(()=>{});
+                }
+
                 lockNameInput();
+                isNameRegistered = true;
             }
 
             push(chatRef, {
+                uid: userId,     // ربط الرسالة بالـ ID الموحد
                 sender: name,
                 text: text,
                 timestamp: serverTimestamp()
@@ -391,10 +440,11 @@
 
         onChildAdded(chatRef, (snapshot) => {
             const data = snapshot.val();
-            const currentName = userNameInput.value.trim() || LANG_DICT[currentLang].guest;
-            const savedLocalName = localStorage.getItem('twaiqChatName') || currentName;
+            const msgUid = data.uid || 'unknown';
             
-            const isMine = data.sender === savedLocalName;
+            // التحقق من أن الرسالة تعود لنفس المستخدم بناءً على الـ ID الخاص به
+            const isMine = (msgUid === userId && userId !== 'default') || 
+                           (data.sender === userNameInput.value.trim() && data.sender !== '');
 
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${isMine ? 'mine' : 'others'}`;
