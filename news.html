@@ -129,6 +129,19 @@
             100% { transform: scale(1); }
         }
 
+        .btn-chat {
+            position: relative; background: #fff; color: #1d1b20; border-radius: 16px; font-weight: 700; 
+            height: 50px; min-height: 50px; border: 1px solid #e4ddd4; 
+            transition: all 0.3s ease; 
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+            width: 100%; cursor: pointer; font-family: inherit; font-size: 15px; flex-shrink: 0; z-index: 1;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        .btn-chat:hover { border-color: #b8935a; color: #b8935a; }
+        .btn-chat:active { transform: translateY(0) scale(0.96); }
+        .btn-chat i { font-size: 18px; color: #b8935a; }
+
         .btn-close-modern {
             position: relative; background: #1d1b20; color: #fff; border-radius: 16px; font-weight: 700; 
             height: 50px; min-height: 50px; border: 1px solid rgba(184,147,90,.5); 
@@ -195,6 +208,11 @@
                 </ul>
             </div>
 
+            <button class="btn-chat" id="chatBtn">
+                <i class="fas fa-comments"></i>
+                <span id="chatBtnText">الدخول للمحادثة الجماعية</span>
+            </button>
+
             <button class="btn-close-modern" id="closeBtn">
                 <span id="btnText">حسناً</span>
             </button>
@@ -239,9 +257,14 @@
         window.addEventListener('unload', killConnection);
 
         document.addEventListener('contextmenu', e => e.preventDefault());
+        
         document.getElementById('closeBtn').addEventListener('click', function() {
             killConnection();
             window.location.href = "ninja://close";
+        });
+
+        document.getElementById('chatBtn').addEventListener('click', function() {
+            window.location.href = "chat.html";
         });
 
         const LANG_DICT = {
@@ -250,6 +273,7 @@
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
                 upTitle: 'آخر الأخبار',
                 btn: 'حسناً',
+                chatBtn: 'الدخول للمحادثة الجماعية',
                 cTitNew: 'تجربة أسرع وأكثر سلاسة',
                 cDesNew: 'تم تحسين أداء التطبيق ليكون أخف وأسرع استجابة، مما يمنحك تجربة استخدام وتصفح في قمة السلاسة.',
                 cTitOld: 'إطلاق الإصدار الجديد v13.7',
@@ -260,6 +284,7 @@
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
                 upTitle: 'Latest News',
                 btn: 'OK',
+                chatBtn: 'Join Group Chat',
                 cTitNew: 'Faster & Smoother Experience',
                 cDesNew: 'The app\'s performance has been optimized to be lighter and more responsive, providing you with a remarkably seamless user experience.',
                 cTitOld: 'Version v13.7 Released',
@@ -294,7 +319,6 @@
             } catch(e) {}
             return null;
         }
-
         
         let currentLang = 'ar';
         try {
@@ -309,7 +333,6 @@
             let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
             currentLang = sysLang.startsWith('en') ? 'en' : 'ar';
         }
-        // --------------------------------------------
 
         function applyLanguage() {
             const d = LANG_DICT[currentLang];
@@ -320,6 +343,7 @@
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
+            document.getElementById('chatBtnText').innerText = d.chatBtn;
             document.getElementById('cTitNew').innerText = d.cTitNew;
             document.getElementById('cDesNew').innerText = d.cDesNew;
             document.getElementById('cTitOld').innerText = d.cTitOld;
