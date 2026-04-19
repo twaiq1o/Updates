@@ -105,23 +105,45 @@
         }
 
         .username-container {
-            display: flex; gap: 8px; width: 100%;
+            display: flex; align-items: center; width: 100%;
+            background: #faf9f7; border: 1px solid #e4ddd4; border-radius: 12px;
+            padding: 0 15px; transition: border 0.3s, background 0.3s;
+            cursor: text;
+        }
+
+        .username-container:focus-within {
+            border-color: #b8935a; background: #fff;
+        }
+
+        .username-container.locked-container {
+            background: #f0ece4; cursor: pointer;
+        }
+
+        .username-container.locked-container:focus-within {
+            border-color: #e4ddd4; background: #f0ece4;
+        }
+
+        .user-label-group {
+            display: flex; align-items: center; gap: 6px;
+            color: #b8935a; font-size: 12px; font-weight: 800;
+            white-space: nowrap; pointer-events: none;
+            border-left: 1px solid #e4ddd4; margin-left: 8px; padding-left: 8px;
+        }
+
+        html[dir="ltr"] .user-label-group {
+            border-left: none; border-right: 1px solid #e4ddd4; 
+            margin-left: 0; margin-right: 8px; 
+            padding-left: 0; padding-right: 8px;
         }
 
         .username-input {
-            flex-grow: 1; padding: 10px 15px; border: 1px solid #e4ddd4;
-            border-radius: 12px; font-size: 12px; font-weight: 700; color: #1d1b20;
-            background: #faf9f7; transition: border 0.3s;
+            flex-grow: 1; padding: 12px 0; border: none; background: transparent;
+            font-size: 12px; font-weight: 700; color: #1d1b20; outline: none;
+            width: 100%;
         }
-        .username-input:focus { border-color: #b8935a; outline: none; }
-        .username-input:disabled { background: #f0ece4; color: #a59b8d; cursor: not-allowed; }
 
-        .edit-name-btn {
-            background: #faf9f7; color: #7d6b52; border: 1px solid #e4ddd4; border-radius: 12px;
-            width: 40px; height: 40px; display: flex; justify-content: center; align-items: center;
-            cursor: pointer; transition: all 0.2s; flex-shrink: 0;
-        }
-        .edit-name-btn:active { transform: scale(0.9); }
+        .username-input::placeholder { color: #a59b8d; font-weight: 500; }
+        .username-input:read-only { color: #a59b8d; cursor: pointer; }
 
         .message-box { display: flex; gap: 8px; }
         
@@ -167,9 +189,12 @@
         <div class="chat-messages" id="chatBox"></div>
 
         <div class="chat-input-area">
-            <div class="username-container">
-                <input type="text" id="userName" class="username-input" placeholder="اكتب اسمك المستعار هنا..." maxlength="20">
-                <button class="edit-name-btn" id="editNameBtn"><i class="fas fa-pen"></i></button>
+            <div class="username-container" id="userContainer">
+                <div class="user-label-group">
+                    <i class="fas fa-user"></i>
+                    <span id="nameLabelText">الاسم</span>
+                </div>
+                <input type="text" id="userName" class="username-input" placeholder="اسمك..." maxlength="20">
             </div>
             <div class="message-box">
                 <input type="text" id="msgText" class="msg-input" placeholder="اكتب رسالتك..." autocomplete="off">
@@ -200,11 +225,11 @@
         const chatRef = ref(db, 'global_messages');
 
         const chatBox = document.getElementById('chatBox');
+        const userContainer = document.getElementById('userContainer');
         const userNameInput = document.getElementById('userName');
         const msgTextInput = document.getElementById('msgText');
         const sendBtn = document.getElementById('sendBtn');
         const closeChatBtn = document.getElementById('closeChatBtn');
-        const editNameBtn = document.getElementById('editNameBtn');
         const toastMsg = document.getElementById('toastMsg');
 
         const LANG_DICT = {
@@ -213,7 +238,8 @@
                 title: 'دردشة طويق',
                 h2: 'محادثة طويق',
                 p: 'محادثة جماعية مباشرة',
-                namePlaceholder: 'اكتب اسمك المستعار هنا...',
+                namePlaceholder: 'اسمك...',
+                nameLabel: 'الاسم',
                 msgPlaceholder: 'اكتب رسالتك...',
                 guest: 'ضيف',
                 toastWait1: 'يرجى الانتظار ',
@@ -224,7 +250,8 @@
                 title: 'Twaiq Chat',
                 h2: 'Twaiq Chat',
                 p: 'Live Group Chat',
-                namePlaceholder: 'Type your nickname here...',
+                namePlaceholder: 'Your name...',
+                nameLabel: 'Name',
                 msgPlaceholder: 'Type your message...',
                 guest: 'Guest',
                 toastWait1: 'Please wait ',
@@ -248,6 +275,7 @@
             document.getElementById('chatTitle').innerText = d.h2;
             document.getElementById('chatSub').innerText = d.p;
             document.getElementById('userName').placeholder = d.namePlaceholder;
+            document.getElementById('nameLabelText').innerText = d.nameLabel;
             document.getElementById('msgText').placeholder = d.msgPlaceholder;
         }
         applyLanguage();
@@ -297,19 +325,27 @@
             window.location.href = "ninja://close";
         });
 
+        function lockNameInput() {
+            userNameInput.readOnly = true;
+            userContainer.classList.add('locked-container');
+        }
+
+        function unlockNameInput() {
+            userNameInput.readOnly = false;
+            userContainer.classList.remove('locked-container');
+            userNameInput.focus();
+        }
+
         const savedName = localStorage.getItem('twaiqChatName');
         if (savedName) {
             userNameInput.value = savedName;
-            userNameInput.disabled = true; 
+            lockNameInput();
         }
 
-        const COOLDOWN_MS = 30 * 60 * 1000; 
+        const COOLDOWN_MS = 60 * 60 * 1000; 
 
-        editNameBtn.addEventListener('click', () => {
-            if (!userNameInput.disabled) {
-                userNameInput.focus();
-                return;
-            }
+        userContainer.addEventListener('click', () => {
+            if (!userNameInput.readOnly) return;
             
             const lastEdit = parseInt(localStorage.getItem('twaiqNameLastEdit') || '0', 10);
             const now = getTrueServerTime();
@@ -319,8 +355,7 @@
                 const remainingMins = Math.ceil((COOLDOWN_MS - diff) / 60000);
                 showToast(LANG_DICT[currentLang].toastWait1 + remainingMins + LANG_DICT[currentLang].toastWait2);
             } else {
-                userNameInput.disabled = false;
-                userNameInput.focus();
+                unlockNameInput();
             }
         });
 
@@ -330,10 +365,10 @@
 
             if (text === '') return;
 
-            if (!userNameInput.disabled) {
+            if (!userNameInput.readOnly) {
                 localStorage.setItem('twaiqChatName', name);
                 localStorage.setItem('twaiqNameLastEdit', getTrueServerTime().toString());
-                userNameInput.disabled = true;
+                lockNameInput();
             }
 
             push(chatRef, {
