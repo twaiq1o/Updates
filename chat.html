@@ -14,11 +14,12 @@
             background-color: transparent; 
             display: flex; justify-content: center; align-items: center; 
             padding: 16px; margin: 0;
+            height: 100vh; overflow: hidden;
         }
 
         .chat-card {
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
-            width: 100%; max-width: 360px; height: 550px;
+            width: 100%; max-width: 360px; height: 550px; max-height: 100%;
             display: flex; flex-direction: column;
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             overflow: hidden; position: relative;
@@ -33,7 +34,7 @@
         .chat-header {
             background: #fff; padding: 20px; border-bottom: 1px solid #f0ece4;
             display: flex; align-items: center; gap: 12px; z-index: 10;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02); position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); position: relative; flex-shrink: 0;
         }
 
         .chat-header i.fa-comments { color: #b8935a; font-size: 24px; }
@@ -87,15 +88,27 @@
 
         .chat-input-area {
             background: #fff; padding: 15px; border-top: 1px solid #f0ece4;
-            display: flex; flex-direction: column; gap: 10px;
+            display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
+        }
+
+        .username-container {
+            display: flex; gap: 8px; width: 100%;
         }
 
         .username-input {
-            width: 100%; padding: 10px 15px; border: 1px solid #e4ddd4;
+            flex-grow: 1; padding: 10px 15px; border: 1px solid #e4ddd4;
             border-radius: 12px; font-size: 12px; font-weight: 700; color: #1d1b20;
             background: #faf9f7; transition: border 0.3s;
         }
         .username-input:focus { border-color: #b8935a; outline: none; }
+        .username-input:disabled { background: #f0ece4; color: #a59b8d; cursor: not-allowed; }
+
+        .edit-name-btn {
+            background: #faf9f7; color: #7d6b52; border: 1px solid #e4ddd4; border-radius: 12px;
+            width: 40px; height: 40px; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+        }
+        .edit-name-btn:active { transform: scale(0.9); }
 
         .message-box { display: flex; gap: 8px; }
         
@@ -115,6 +128,14 @@
         .send-btn:active { transform: scale(0.95); }
         .send-btn i { font-size: 16px; margin-right: 2px; }
 
+        .toast-msg {
+            position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%);
+            background: rgba(29, 27, 32, 0.9); color: #fff; padding: 10px 16px;
+            border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap;
+            pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 1000;
+        }
+        .toast-msg.show { opacity: 1; }
+
     </style>
 </head>
 <body>
@@ -132,17 +153,22 @@
         <div class="chat-messages" id="chatBox"></div>
 
         <div class="chat-input-area">
-            <input type="text" id="userName" class="username-input" placeholder="اكتب اسمك المستعار هنا..." maxlength="20">
+            <div class="username-container">
+                <input type="text" id="userName" class="username-input" placeholder="اكتب اسمك المستعار هنا..." maxlength="20">
+                <button class="edit-name-btn" id="editNameBtn"><i class="fas fa-pen"></i></button>
+            </div>
             <div class="message-box">
                 <input type="text" id="msgText" class="msg-input" placeholder="اكتب رسالتك..." autocomplete="off">
                 <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
+        
+        <div id="toastMsg" class="toast-msg"></div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, serverTimestamp, goOffline, goOnline } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, serverTimestamp, goOffline, goOnline, onValue } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAlSb2RsFDei6KFh2VvrKyM-ydDrhxV3aE",
@@ -164,6 +190,25 @@
         const msgTextInput = document.getElementById('msgText');
         const sendBtn = document.getElementById('sendBtn');
         const closeChatBtn = document.getElementById('closeChatBtn');
+        const editNameBtn = document.getElementById('editNameBtn');
+        const toastMsg = document.getElementById('toastMsg');
+
+        // جلب الوقت الحقيقي من السيرفر لمنع تلاعب المستخدم
+        let serverOffset = 0;
+        const offsetRef = ref(db, ".info/serverTimeOffset");
+        onValue(offsetRef, (snap) => {
+            serverOffset = snap.val() || 0;
+        });
+
+        function getTrueServerTime() {
+            return Date.now() + serverOffset;
+        }
+
+        function showToast(text) {
+            toastMsg.innerText = text;
+            toastMsg.classList.add('show');
+            setTimeout(() => { toastMsg.classList.remove('show'); }, 3000);
+        }
 
         function killConnection() {
             try { goOffline(db); } catch(e) {}
@@ -174,11 +219,8 @@
         }
 
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                killConnection();
-            } else {
-                restoreConnection();
-            }
+            if (document.visibilityState === 'hidden') killConnection();
+            else restoreConnection();
         });
 
         window.addEventListener('pagehide', killConnection);
@@ -192,7 +234,29 @@
         const savedName = localStorage.getItem('twaiqChatName');
         if (savedName) {
             userNameInput.value = savedName;
+            userNameInput.disabled = true; // إقفال الحقل إذا كان مسجلاً مسبقاً
         }
+
+        const COOLDOWN_MS = 30 * 60 * 1000; // 30 دقيقة
+
+        editNameBtn.addEventListener('click', () => {
+            if (!userNameInput.disabled) {
+                userNameInput.focus();
+                return;
+            }
+            
+            const lastEdit = parseInt(localStorage.getItem('twaiqNameLastEdit') || '0', 10);
+            const now = getTrueServerTime();
+            const diff = now - lastEdit;
+            
+            if (diff < COOLDOWN_MS && lastEdit !== 0) {
+                const remainingMins = Math.ceil((COOLDOWN_MS - diff) / 60000);
+                showToast(`يرجى الانتظار ${remainingMins} دقيقة لتعديل الاسم مجدداً.`);
+            } else {
+                userNameInput.disabled = false;
+                userNameInput.focus();
+            }
+        });
 
         function sendMessage() {
             const name = userNameInput.value.trim() || 'ضيف';
@@ -200,7 +264,12 @@
 
             if (text === '') return;
 
-            localStorage.setItem('twaiqChatName', name);
+            // إقفال الاسم وتخزين وقت التعديل
+            if (!userNameInput.disabled) {
+                localStorage.setItem('twaiqChatName', name);
+                localStorage.setItem('twaiqNameLastEdit', getTrueServerTime().toString());
+                userNameInput.disabled = true;
+            }
 
             push(chatRef, {
                 sender: name,
