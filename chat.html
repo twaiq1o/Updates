@@ -8,7 +8,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
         
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; outline: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         body { 
             background-color: transparent; 
@@ -38,33 +38,11 @@
             100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
 
-        .lang-toggle {
-            position: absolute; top: 25px; right: 20px;
-            background: #faf9f7; border: 1px solid #f0ece4; color: #1d1b20; 
-            padding: 6px 12px; border-radius: 30px; font-size: 11px; font-weight: 700; 
-            font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 6px; 
-            transition: all .2s; direction: ltr; z-index: 20;
-        }
-        html[dir="ltr"] .lang-toggle { right: auto; left: 20px; }
-        .lang-toggle:active { transform: scale(.95); }
-        #globeIcon { color: #b8935a; transition: transform .6s ease; }
-
-        .content-transition {
-            display: flex; flex-direction: column; flex-grow: 1; height: 100%;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            overflow: hidden;
-        }
-        .hide-content { opacity: 0; transform: translateY(5px); }
-
         .chat-header {
-            background: #fff; padding: 20px 75px; border-bottom: 1px solid #f0ece4;
-            display: flex; justify-content: center; align-items: center; z-index: 10;
+            background: #fff; padding: 20px; border-bottom: 1px solid #f0ece4;
+            display: flex; align-items: center; gap: 12px; z-index: 10;
             box-shadow: 0 4px 10px rgba(0,0,0,0.02); position: relative; 
-            flex-shrink: 0; min-height: 80px; text-align: center;
-        }
-
-        .header-title-wrap {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
+            flex-shrink: 0; min-height: 80px;
         }
 
         .chat-header i.fa-comments { color: #b8935a; font-size: 24px; }
@@ -111,18 +89,18 @@
         .message.mine { align-self: flex-start; }
         .message.mine .text { background: #b8935a; color: #fff; border-bottom-right-radius: 4px; }
         .message.mine .sender-name { text-align: right; color: #b8935a; }
+        html[dir="ltr"] .message.mine .sender-name { text-align: left; }
 
         .message.others { align-self: flex-end; }
         .message.others .text { background: #fff; color: #1d1b20; border: 1px solid #f0ece4; border-bottom-left-radius: 4px; }
+        html[dir="ltr"] .message.others .text { border-bottom-left-radius: 16px; border-bottom-right-radius: 4px; }
         .message.others .sender-name { text-align: left; }
-
-        html[dir="ltr"] .message.mine .sender-name { text-align: left; }
         html[dir="ltr"] .message.others .sender-name { text-align: right; }
 
         .chat-input-area {
             background: #fff; padding: 15px; border-top: 1px solid #f0ece4;
             display: flex; flex-direction: column; gap: 10px; 
-            flex-shrink: 0; min-height: 90px; 
+            flex-shrink: 0; min-height: 90px;
         }
 
         .username-container {
@@ -161,7 +139,6 @@
         .send-btn:hover { background: #b8935a; transform: translateY(-2px); }
         .send-btn:active { transform: scale(0.95); }
         .send-btn i { font-size: 16px; margin-right: 2px; }
-        
         html[dir="ltr"] .send-btn i { margin-right: 0; margin-left: 2px; transform: scaleX(-1); }
 
         .toast-msg {
@@ -177,34 +154,25 @@
 <body>
 
     <div class="chat-card" id="chatCard">
-        <button class="lang-toggle" id="langBtn">
-            <i class="fas fa-globe" id="globeIcon"></i> 
-            <span id="langText" style="margin-top: 2px;">English</span>
-        </button>
-
-        <div id="contentTransition" class="content-transition">
-            <div class="chat-header">
-                <div class="close-btn" id="closeChatBtn"><i class="fas fa-times"></i></div>
-                <div class="header-title-wrap">
-                    <i class="fas fa-comments"></i>
-                    <div>
-                        <h2 id="chatTitle">محادثة طويق</h2>
-                        <p id="chatSub">محادثة جماعية مباشرة</p>
-                    </div>
-                </div>
+        <div class="chat-header">
+            <div class="close-btn" id="closeChatBtn"><i class="fas fa-times"></i></div>
+            <i class="fas fa-comments"></i>
+            <div>
+                <h2 id="chatTitle">محادثة طويق</h2>
+                <p id="chatSub">محادثة جماعية مباشرة</p>
             </div>
+        </div>
 
-            <div class="chat-messages" id="chatBox"></div>
+        <div class="chat-messages" id="chatBox"></div>
 
-            <div class="chat-input-area">
-                <div class="username-container">
-                    <input type="text" id="userName" class="username-input" placeholder="اكتب اسمك المستعار هنا..." maxlength="20">
-                    <button class="edit-name-btn" id="editNameBtn"><i class="fas fa-pen"></i></button>
-                </div>
-                <div class="message-box">
-                    <input type="text" id="msgText" class="msg-input" placeholder="اكتب رسالتك..." autocomplete="off">
-                    <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
-                </div>
+        <div class="chat-input-area">
+            <div class="username-container">
+                <input type="text" id="userName" class="username-input" placeholder="اكتب اسمك المستعار هنا..." maxlength="20">
+                <button class="edit-name-btn" id="editNameBtn"><i class="fas fa-pen"></i></button>
+            </div>
+            <div class="message-box">
+                <input type="text" id="msgText" class="msg-input" placeholder="اكتب رسالتك..." autocomplete="off">
+                <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
         
@@ -230,6 +198,7 @@
         const db = getDatabase(app);
         const chatRef = ref(db, 'global_messages');
 
+        const chatCard = document.getElementById('chatCard');
         const chatBox = document.getElementById('chatBox');
         const userNameInput = document.getElementById('userName');
         const msgTextInput = document.getElementById('msgText');
@@ -238,20 +207,24 @@
         const editNameBtn = document.getElementById('editNameBtn');
         const toastMsg = document.getElementById('toastMsg');
 
-        const LANG_DICT = {
+        const DICT = {
             ar: {
-                dir: 'rtl', opp: 'en', langT: 'English',
-                title: 'محادثة طويق', sub: 'محادثة جماعية مباشرة',
-                namePlace: 'اكتب اسمك المستعار هنا...', msgPlace: 'اكتب رسالتك...',
-                waitMsg1: 'يرجى الانتظار', waitMsg2: 'دقيقة لتعديل الاسم مجدداً.',
-                guest: 'ضيف'
+                dir: 'rtl',
+                title: 'محادثة طويق',
+                sub: 'محادثة جماعية مباشرة',
+                namePlaceholder: 'اكتب اسمك المستعار هنا...',
+                msgPlaceholder: 'اكتب رسالتك...',
+                guest: 'ضيف',
+                waitMsg: 'يرجى الانتظار {mins} دقيقة لتعديل الاسم مجدداً.'
             },
             en: {
-                dir: 'ltr', opp: 'ar', langT: 'العربية',
-                title: 'Twaiq Chat', sub: 'Live Group Chat',
-                namePlace: 'Enter your nickname here...', msgPlace: 'Type your message...',
-                waitMsg1: 'Please wait', waitMsg2: 'minutes to edit name again.',
-                guest: 'Guest'
+                dir: 'ltr',
+                title: 'Twaiq Chat',
+                sub: 'Live Group Chat',
+                namePlaceholder: 'Type your nickname here...',
+                msgPlaceholder: 'Type your message...',
+                guest: 'Guest',
+                waitMsg: 'Please wait {mins} minutes to edit your name again.'
             }
         };
 
@@ -265,38 +238,17 @@
                 currentLang = sysLang.startsWith('en') ? 'en' : 'ar';
             }
         } catch (e) {
-            currentLang = 'ar';
+            let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+            currentLang = sysLang.startsWith('en') ? 'en' : 'ar';
         }
 
-        function applyLanguage() {
-            const d = LANG_DICT[currentLang];
-            document.documentElement.lang = currentLang;
-            document.documentElement.dir = d.dir;
-            document.getElementById('langText').innerText = d.langT;
-            document.getElementById('chatTitle').innerText = d.title;
-            document.getElementById('chatSub').innerText = d.sub;
-            document.getElementById('userName').placeholder = d.namePlace;
-            document.getElementById('msgText').placeholder = d.msgPlace;
-        }
-
-        document.getElementById('langBtn').addEventListener('click', function() {
-            currentLang = LANG_DICT[currentLang].opp;
-            try { localStorage.setItem('ninjaNewsLangV2', currentLang); } catch(e){}
-            
-            let globe = document.getElementById('globeIcon');
-            globe.style.transform = globe.style.transform === 'rotate(360deg)' ? 'rotate(0deg)' : 'rotate(360deg)';
-            
-            let content = document.getElementById('contentTransition');
-            content.classList.add('hide-content');
-            
-            setTimeout(() => {
-                applyLanguage();
-                content.classList.remove('hide-content');
-                setTimeout(() => { if(chatBox) chatBox.scrollTop = chatBox.scrollHeight; }, 50);
-            }, 300);
-        });
-
-        applyLanguage();
+        const langData = DICT[currentLang];
+        document.documentElement.lang = currentLang;
+        document.documentElement.dir = langData.dir;
+        document.getElementById('chatTitle').innerText = langData.title;
+        document.getElementById('chatSub').innerText = langData.sub;
+        userNameInput.placeholder = langData.namePlaceholder;
+        msgTextInput.placeholder = langData.msgPlaceholder;
 
         function setRealVh() {
             let vh = window.innerHeight;
@@ -360,11 +312,10 @@
             const lastEdit = parseInt(localStorage.getItem('twaiqNameLastEdit') || '0', 10);
             const now = getTrueServerTime();
             const diff = now - lastEdit;
-            const d = LANG_DICT[currentLang];
             
             if (diff < COOLDOWN_MS && lastEdit !== 0) {
                 const remainingMins = Math.ceil((COOLDOWN_MS - diff) / 60000);
-                showToast(`${d.waitMsg1} ${remainingMins} ${d.waitMsg2}`);
+                showToast(langData.waitMsg.replace('{mins}', remainingMins));
             } else {
                 userNameInput.disabled = false;
                 userNameInput.focus();
@@ -372,8 +323,7 @@
         });
 
         function sendMessage() {
-            const fallbackGuest = LANG_DICT[currentLang].guest;
-            const name = userNameInput.value.trim() || fallbackGuest;
+            const name = userNameInput.value.trim() || langData.guest;
             const text = msgTextInput.value.trim();
 
             if (text === '') return;
@@ -404,8 +354,7 @@
 
         onChildAdded(chatRef, (snapshot) => {
             const data = snapshot.val();
-            const fallbackGuest = LANG_DICT[currentLang].guest;
-            const currentName = userNameInput.value.trim() || fallbackGuest;
+            const currentName = userNameInput.value.trim() || langData.guest;
             const savedLocalName = localStorage.getItem('twaiqChatName') || currentName;
             
             const isMine = data.sender === savedLocalName;
