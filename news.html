@@ -294,10 +294,11 @@
             } catch(e) {}
             return null;
         }
-        
+
+        // --- الكود القديم للتعرف على اللغة بالنص ---
         let currentLang = 'ar';
         try {
-            let savedLang = getState('ninjaNewsLangV2');
+            let savedLang = localStorage.getItem('ninjaNewsLangV2');
             if (savedLang) {
                 currentLang = savedLang;
             } else {
@@ -308,6 +309,7 @@
             let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
             currentLang = sysLang.startsWith('en') ? 'en' : 'ar';
         }
+        // --------------------------------------------
 
         function applyLanguage() {
             const d = LANG_DICT[currentLang];
