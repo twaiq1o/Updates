@@ -100,6 +100,7 @@
         html[dir="ltr"] .changelog-list li { transform: translateX(-10px); animation-name: slideInLeft; }
         .changelog-list li:nth-child(1) { animation-delay: 0.1s; }
         .changelog-list li:nth-child(2) { animation-delay: 0.2s; }
+        .changelog-list li:nth-child(3) { animation-delay: 0.3s; }
 
         @keyframes slideInRight { to { opacity: 1; transform: translateX(0); } }
         @keyframes slideInLeft { to { opacity: 1; transform: translateX(0); } }
@@ -184,6 +185,17 @@
                 <div class="changelog-title"><i class="fas fa-bolt"></i> <span id="uTitle">آخر الأخبار</span></div>
                 <ul class="changelog-list">
                     <li>
+                        <i class="fas fa-comments cl-icon"></i>
+                        <div class="cl-content">
+                            <div class="cl-title" id="cTitChat">قريباً: المحادثة الجماعية</div>
+                            <div class="cl-desc" id="cDesChat">استعد لتجربة تواصل جديدة! نعمل حالياً على تطوير نظام دردشة جماعية يتيح لك التواصل المباشر مع جميع المشتركين. ترقبوا التحديث القادم.</div>
+                            <div class="like-container" id="like-news3" onclick="window.toggleLike('news3')">
+                                <i class="far fa-heart" id="icon-news3"></i>
+                                <span class="like-count" id="count-news3">0</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
                         <i class="fas fa-rocket cl-icon"></i>
                         <div class="cl-content">
                             <div class="cl-title" id="cTitNew">تجربة أسرع وأكثر سلاسة</div>
@@ -264,7 +276,8 @@
         });
 
         document.getElementById('chatBtn').addEventListener('click', function() {
-            window.location.href = "chat.html";
+            const d = LANG_DICT[currentLang];
+            document.getElementById('chatBtnText').innerText = d.btnComingSoon;
         });
 
         const LANG_DICT = {
@@ -274,6 +287,9 @@
                 upTitle: 'آخر الأخبار',
                 btn: 'حسناً',
                 chatBtn: 'الدخول للمحادثة الجماعية',
+                btnComingSoon: 'قريباً...',
+                cTitChat: 'قريباً: المحادثة الجماعية',
+                cDesChat: 'استعد لتجربة تواصل جديدة! نعمل حالياً على تطوير نظام دردشة جماعية يتيح لك التواصل المباشر مع جميع المشتركين. ترقبوا التحديث القادم.',
                 cTitNew: 'تجربة أسرع وأكثر سلاسة',
                 cDesNew: 'تم تحسين أداء التطبيق ليكون أخف وأسرع استجابة، مما يمنحك تجربة استخدام وتصفح في قمة السلاسة.',
                 cTitOld: 'إطلاق الإصدار الجديد v13.7',
@@ -285,6 +301,9 @@
                 upTitle: 'Latest News',
                 btn: 'OK',
                 chatBtn: 'Join Group Chat',
+                btnComingSoon: 'Coming Soon...',
+                cTitChat: 'Coming Soon: Group Chat',
+                cDesChat: 'Get ready for a new way to connect! We are currently developing a live group chat system to let you communicate with all users. Stay tuned.',
                 cTitNew: 'Faster & Smoother Experience',
                 cDesNew: 'The app\'s performance has been optimized to be lighter and more responsive, providing you with a remarkably seamless user experience.',
                 cTitOld: 'Version v13.7 Released',
@@ -344,6 +363,8 @@
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
             document.getElementById('chatBtnText').innerText = d.chatBtn;
+            document.getElementById('cTitChat').innerText = d.cTitChat;
+            document.getElementById('cDesChat').innerText = d.cDesChat;
             document.getElementById('cTitNew').innerText = d.cTitNew;
             document.getElementById('cDesNew').innerText = d.cDesNew;
             document.getElementById('cTitOld').innerText = d.cTitOld;
@@ -375,9 +396,10 @@
                 const data = snapshot.val() || {};
                 document.getElementById('count-news1').innerText = data.news1 || 0;
                 document.getElementById('count-news2').innerText = data.news2 || 0;
+                document.getElementById('count-news3').innerText = data.news3 || 0;
             });
 
-            ['news1', 'news2'].forEach(newsId => {
+            ['news1', 'news2', 'news3'].forEach(newsId => {
                 let isLiked = getState('liked_' + newsId) === 'true' || memoryLikes[newsId] === true;
                 if (isLiked) {
                     let container = document.getElementById('like-' + newsId);
@@ -415,6 +437,10 @@
             }
         };
 
+        fetchInitialLikes();
+    </script>
+</body>
+</html>
         fetchInitialLikes();
     </script>
 </body>
