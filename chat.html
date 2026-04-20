@@ -208,6 +208,24 @@
         }
         .toast-msg.show { opacity: 1; }
 
+        .admin-badge {
+            background: #1d1b20; 
+            color: #b8935a; 
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 800;
+            margin: 0 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            vertical-align: middle;
+        }
+
+        .message.mine .admin-badge {
+            background: #fff;
+            color: #b8935a;
+        }
     </style>
 </head>
 <body>
@@ -267,6 +285,7 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('uid') || 'default';
+        const ADMIN_UIDS = ['233878', '٢٣٣٨٧٨'];
 
         const chatRef = ref(db, 'global_messages');
         const userProfileRef = ref(db, 'chat_users/' + userId);
@@ -296,7 +315,8 @@
                 toastWait2: ' دقيقة لتعديل الاسم مجدداً',
                 loading: 'جاري تحميل المحادثات...',
                 retry: 'إعادة المحاولة',
-                sendFailed: 'تعذر الإرسال، تحقق من اتصالك'
+                sendFailed: 'تعذر الإرسال، تحقق من اتصالك',
+                adminBadge: '<i class="fas fa-shield-alt"></i> الإدارة'
             },
             en: {
                 dir: 'ltr',
@@ -311,7 +331,8 @@
                 toastWait2: ' minutes to edit name again',
                 loading: 'Loading messages...',
                 retry: 'Retry',
-                sendFailed: 'Failed to send, check connection'
+                sendFailed: 'Failed to send, check connection',
+                adminBadge: '<i class="fas fa-shield-alt"></i> Admin'
             }
         };
 
@@ -558,6 +579,9 @@
             const isMine = (msgUid === userId && userId !== 'default') || 
                            (data.sender === userNameInput.value.trim() && data.sender !== '');
 
+            const isAdmin = ADMIN_UIDS.includes(msgUid);
+            const badgeHtml = isAdmin ? `<span class="admin-badge">${LANG_DICT[currentLang].adminBadge}</span>` : '';
+
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${isMine ? 'mine' : 'others'}`;
             msgDiv.setAttribute('data-key', snapshot.key);
@@ -568,7 +592,7 @@
             }
 
             msgDiv.innerHTML = `
-                <div class="sender-name">${escapeHTML(data.sender)}</div>
+                <div class="sender-name">${escapeHTML(data.sender)} ${badgeHtml}</div>
                 <div class="text">${escapeHTML(data.text)}${spinnerHtml}</div>
             `;
 
