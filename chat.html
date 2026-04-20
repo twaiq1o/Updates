@@ -223,7 +223,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // سحب ID المستخدم من الرابط المرسل من التطبيق
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('uid') || 'default';
 
@@ -344,7 +343,6 @@
 
         let isNameRegistered = false;
 
-        // جلب الاسم من الفايربيس (حتى لو دخل من جوال ثاني)
         if(userId !== 'default') {
             onValue(userProfileRef, (snap) => {
                 if (snap.exists()) {
@@ -383,7 +381,6 @@
             }
         });
 
-        // منع الكتابة اذا لم يتم ادخال الاسم
         msgTextInput.addEventListener('focus', () => {
             const name = userNameInput.value.trim();
             if (!name) {
@@ -420,11 +417,13 @@
             }
 
             push(chatRef, {
-                uid: userId,     // ربط الرسالة بالـ ID الموحد
+                uid: userId,
                 sender: name,
                 text: text,
                 timestamp: serverTimestamp()
             });
+
+            set(ref(db, 'notifications/last_msg_tick'), nowTime).catch(()=>{});
 
             msgTextInput.value = '';
             msgTextInput.focus();
@@ -442,7 +441,6 @@
             const data = snapshot.val();
             const msgUid = data.uid || 'unknown';
             
-            // التحقق من أن الرسالة تعود لنفس المستخدم بناءً على الـ ID الخاص به
             const isMine = (msgUid === userId && userId !== 'default') || 
                            (data.sender === userNameInput.value.trim() && data.sender !== '');
 
