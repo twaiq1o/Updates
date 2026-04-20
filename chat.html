@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>دردشة طويق</title>
+    <title>دردشة جماعية</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
@@ -209,9 +209,6 @@
         .toast-msg.show { opacity: 1; }
 
         .admin-badge {
-            background: linear-gradient(135deg, #c59b5f 0%, #e2c792 50%, #c59b5f 100%);
-            background-size: 200% auto;
-            color: #fff;
             padding: 3px 10px;
             border-radius: 12px;
             font-size: 10px;
@@ -221,25 +218,25 @@
             align-items: center;
             gap: 4px;
             vertical-align: middle;
-            box-shadow: 0 2px 8px rgba(197, 155, 95, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
-            animation: goldShine 3s linear infinite;
+            border: 1px solid #b8935a;
+            animation: badgeDynamic 2.5s infinite alternate ease-in-out;
         }
 
-        @keyframes goldShine {
-            to { background-position: 200% center; }
+        @keyframes badgeDynamic {
+            0% {
+                background-color: #b8935a;
+                color: #ffffff;
+                box-shadow: 0 2px 6px rgba(184, 147, 90, 0.5);
+            }
+            100% {
+                background-color: #ffffff;
+                color: #b8935a;
+                box-shadow: 0 2px 6px rgba(255, 255, 255, 0.7);
+            }
         }
 
         .admin-badge i {
-            color: #fff;
-            font-size: 11px;
-            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
-        }
-
-        .message.mine .admin-badge {
-            border: 1px solid #fff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            color: inherit;
         }
     </style>
 </head>
@@ -256,7 +253,7 @@
             <div class="close-btn" id="closeChatBtn"><i class="fas fa-times"></i></div>
             <i class="fas fa-comments"></i>
             <div>
-                <h2 id="chatTitle">محادثة طويق</h2>
+                <h2 id="chatTitle">محادثة جماعية</h2>
                 <p id="chatSub">محادثة جماعية مباشرة</p>
             </div>
         </div>
@@ -332,7 +329,7 @@
                 loading: 'جاري تحميل المحادثات...',
                 retry: 'إعادة المحاولة',
                 sendFailed: 'تعذر الإرسال، تحقق من اتصالك',
-                adminBadge: '<i class="fas fa-crown"></i> الإدارة'
+                adminBadge: '<i class="fas fa-shield-alt"></i> الإدارة'
             },
             en: {
                 dir: 'ltr',
@@ -348,7 +345,7 @@
                 loading: 'Loading messages...',
                 retry: 'Retry',
                 sendFailed: 'Failed to send, check connection',
-                adminBadge: '<i class="fas fa-crown"></i> Admin'
+                adminBadge: '<i class="fas fa-shield-alt"></i> Admin'
             }
         };
 
