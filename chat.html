@@ -10,7 +10,7 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
         
-        input, .message .text { -webkit-user-select: text; user-select: text; }
+        input, textarea, .message .text { -webkit-user-select: text; user-select: text; }
 
         body { 
             background-color: transparent; 
@@ -103,6 +103,7 @@
         .message .text {
             padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.5;
             word-wrap: break-word; font-weight: 500;
+            white-space: pre-wrap;
         }
 
         .message.mine { align-self: flex-start; }
@@ -189,6 +190,7 @@
             flex-grow: 1; padding: 12px 15px; border: 1px solid #e4ddd4;
             border-radius: 16px; font-size: 13px; background: #faf9f7;
             transition: border 0.3s; font-weight: 500;
+            resize: none; height: 44px; font-family: inherit; overflow-y: auto;
         }
         .msg-input:focus { border-color: #b8935a; outline: none; background: #fff; }
 
@@ -230,7 +232,6 @@
             animation: badgeShimmerText 1.5s infinite alternate ease-in-out;
         }
 
-
         .admin-badge::before {
             content: '';
             position: absolute;
@@ -244,7 +245,6 @@
             z-index: -2;
         }
 
-        
         .admin-badge::after {
             content: '';
             position: absolute;
@@ -254,12 +254,10 @@
             z-index: -1;
         }
 
-        
         @keyframes wormSpin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
 
         @keyframes badgeShimmerText {
             0% { text-shadow: 0 0 2px rgba(255, 255, 255, 0.3); }
@@ -305,7 +303,7 @@
                 <input type="text" id="userName" class="username-input" placeholder="اسمك..." maxlength="20">
             </div>
             <div class="message-box">
-                <input type="text" id="msgText" class="msg-input" placeholder="اكتب رسالتك..." autocomplete="off">
+                <textarea id="msgText" class="msg-input" placeholder="اكتب رسالتك..." rows="1" autocomplete="off"></textarea>
                 <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
@@ -614,8 +612,9 @@
 
         sendBtn.addEventListener('click', sendMessage);
 
-        msgTextInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+        msgTextInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
                 sendMessage();
             }
         });
