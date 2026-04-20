@@ -212,9 +212,9 @@
                         <div class="cl-content">
                             <div class="cl-title" id="cTitChat">إطلاق الإصدار الجديد v13.8</div>
                             <div class="cl-desc" id="cDesChat">تم إطلاق الإصدار 13.8 بنجاح! يتضمن هذا التحديث ميزة المحادثة الجماعية التي تتيح لك التواصل المباشر مع جميع المشتركين، بالإضافة إلى تحسينات عامة للأداء.</div>
-                            <div class="like-container" id="like-news3" onclick="window.toggleLike('news3')">
-                                <i class="far fa-heart" id="icon-news3"></i>
-                                <span class="like-count" id="count-news3">0</span>
+                            <div class="like-container" id="like-news4" onclick="window.toggleLike('news4')">
+                                <i class="far fa-heart" id="icon-news4"></i>
+                                <span class="like-count" id="count-news4">0</span>
                             </div>
                         </div>
                     </li>
@@ -404,10 +404,10 @@
                 const data = snapshot.val() || {};
                 document.getElementById('count-news1').innerText = data.news1 || 0;
                 document.getElementById('count-news2').innerText = data.news2 || 0;
-                document.getElementById('count-news3').innerText = data.news3 || 0;
+                document.getElementById('count-news4').innerText = data.news4 || 0;
             });
 
-            ['news1', 'news2', 'news3'].forEach(newsId => {
+            ['news1', 'news2', 'news4'].forEach(newsId => {
                 let isLiked = getState('liked_' + newsId) === 'true' || memoryLikes[newsId] === true;
                 if (isLiked) {
                     let container = document.getElementById('like-' + newsId);
