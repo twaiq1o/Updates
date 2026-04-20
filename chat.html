@@ -209,8 +209,9 @@
         .toast-msg.show { opacity: 1; }
 
         .admin-badge {
-            padding: 3px 10px;
-            border-radius: 12px;
+            position: relative;
+            padding: 4px 12px;
+            border-radius: 14px;
             font-size: 10px;
             font-weight: 800;
             margin: 0 4px;
@@ -218,21 +219,54 @@
             align-items: center;
             gap: 4px;
             vertical-align: middle;
-            border: 1px solid #b8935a;
-            animation: badgeDynamic 2.5s infinite alternate ease-in-out;
+            color: #ffffff; 
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(139, 0, 0, 0.5); /* توهج أحمر داكن خفيف حول البادج */
+            z-index: 1;
+            border: none; 
+
+            animation: badgeShimmerText 1.5s infinite alternate ease-in-out;
         }
 
-        @keyframes badgeDynamic {
-            0% {
-                background-color: #b8935a;
-                color: #ffffff;
-                box-shadow: 0 2px 6px rgba(184, 147, 90, 0.5);
-            }
-            100% {
-                background-color: #ffffff;
-                color: #b8935a;
-                box-shadow: 0 2px 6px rgba(255, 255, 255, 0.7);
-            }
+
+        .admin-badge::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+
+            background: conic-gradient(from 0deg, transparent 70%, #ffffff 100%);
+            animation: wormSpin 2s linear infinite;
+            z-index: -2;
+        }
+
+        
+        .admin-badge::after {
+            content: '';
+            position: absolute;
+            inset: 1.5px; /* سماكة الحافة الدودية */
+            background: linear-gradient(135deg, #5c0000, #8b0000); /* أحمر داكن فخم */
+            border-radius: 12px;
+            z-index: -1;
+        }
+
+        
+        @keyframes wormSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+
+        @keyframes badgeShimmerText {
+            0% { text-shadow: 0 0 2px rgba(255, 255, 255, 0.3); }
+            100% { text-shadow: 0 0 8px rgba(255, 255, 255, 0.9), 0 0 15px rgba(255, 255, 255, 0.6); }
+        }
+
+        .admin-badge i {
+            color: inherit;
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
         }
 
         .admin-badge i {
