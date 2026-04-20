@@ -612,6 +612,13 @@
 
         sendBtn.addEventListener('click', sendMessage);
 
+        msgTextInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
         onChildAdded(chatRef, (snapshot) => {
             const data = snapshot.val();
             const msgUid = data.uid || 'unknown';
