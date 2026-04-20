@@ -48,9 +48,19 @@
             font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 8px; 
             box-shadow: 0 4px 12px rgba(0,0,0,.04); transition: transform .2s; direction: ltr; z-index: 20;
         }
-        
         .lang-toggle:active { transform: scale(.95); }
         #globeIcon { color: #7d6b52; transition: transform .6s ease; }
+
+        .telegram-btn {
+            position: absolute; top: 20px; right: 20px; 
+            background: #fff; border: 1px solid #e1f0fa; color: #1d1b20; 
+            padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; 
+            font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,.04); transition: transform .2s; direction: ltr; z-index: 20;
+            text-decoration: none;
+        }
+        .telegram-btn:active { transform: scale(.95); }
+        #tgIcon { color: #54a9eb; font-size: 16px; transition: transform .6s ease; }
 
         .content-transition {
             display: flex; flex-direction: column; height: 100%;
@@ -180,6 +190,11 @@
             <span id="langText" style="margin-top: 2px;">English</span>
         </button>
 
+        <a href="https://t.me/NinjaTwaiq" class="telegram-btn" id="tgBtn">
+            <i class="fab fa-telegram-plane" id="tgIcon"></i> 
+            <span id="tgText" style="margin-top: 2px;">قناتنا</span>
+        </a>
+
         <div id="contentTransition" class="content-transition">
             <div class="update-box-wrap">
                 <div class="brand-badge"><i class="far fa-newspaper"></i></div>
@@ -279,7 +294,7 @@
 
         const LANG_DICT = {
             ar: {
-                dir: 'rtl', opp: 'en', langT: 'English',
+                dir: 'rtl', opp: 'en', langT: 'English', tgBtn: 'قناتنا',
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
                 upTitle: 'آخر الأخبار',
                 btn: 'حسناً',
@@ -291,7 +306,7 @@
                 cDesOld: 'أصبحت خريطة الموقع تدعم الآن نظام "النقاط الحرارية"، لتسهيل اختيار موقعك بالقرب من المطاعم ذات الطلب العالي. كما يتضمن التحديث قسماً جديداً لآخر الأخبار، إلى جانب تحسينات شاملة لضمان استقرار وسرعة التطبيق' 
             },
             en: {
-                dir: 'ltr', opp: 'ar', langT: 'العربية',
+                dir: 'ltr', opp: 'ar', langT: 'العربية', tgBtn: 'Channel',
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
                 upTitle: 'Latest News',
                 btn: 'OK',
@@ -332,7 +347,6 @@
             return null;
         }
 
-        
         let currentLang = 'ar';
         try {
             let savedLang = localStorage.getItem('ninjaNewsLangV2');
@@ -352,6 +366,7 @@
             document.documentElement.lang = currentLang;
             document.documentElement.dir = d.dir;
             document.getElementById('langText').innerText = d.langT;
+            document.getElementById('tgText').innerText = d.tgBtn;
             document.getElementById('mTitle').innerText = d.title;
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
