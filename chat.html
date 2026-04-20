@@ -209,22 +209,37 @@
         .toast-msg.show { opacity: 1; }
 
         .admin-badge {
-            background: #1d1b20; 
-            color: #b8935a; 
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 9px;
+            background: linear-gradient(135deg, #c59b5f 0%, #e2c792 50%, #c59b5f 100%);
+            background-size: 200% auto;
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
             font-weight: 800;
             margin: 0 4px;
             display: inline-flex;
             align-items: center;
-            gap: 3px;
+            gap: 4px;
             vertical-align: middle;
+            box-shadow: 0 2px 8px rgba(197, 155, 95, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            animation: goldShine 3s linear infinite;
+        }
+
+        @keyframes goldShine {
+            to { background-position: 200% center; }
+        }
+
+        .admin-badge i {
+            color: #fff;
+            font-size: 11px;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
         }
 
         .message.mine .admin-badge {
-            background: #fff;
-            color: #b8935a;
+            border: 1px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
     </style>
 </head>
@@ -286,6 +301,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('uid') || 'default';
         const ADMIN_UIDS = ['233878', '٢٣٣٨٧٨'];
+        const isAdminUser = ADMIN_UIDS.includes(userId);
 
         const chatRef = ref(db, 'global_messages');
         const userProfileRef = ref(db, 'chat_users/' + userId);
@@ -316,7 +332,7 @@
                 loading: 'جاري تحميل المحادثات...',
                 retry: 'إعادة المحاولة',
                 sendFailed: 'تعذر الإرسال، تحقق من اتصالك',
-                adminBadge: '<i class="fas fa-shield-alt"></i> الإدارة'
+                adminBadge: '<i class="fas fa-crown"></i> الإدارة'
             },
             en: {
                 dir: 'ltr',
@@ -332,7 +348,7 @@
                 loading: 'Loading messages...',
                 retry: 'Retry',
                 sendFailed: 'Failed to send, check connection',
-                adminBadge: '<i class="fas fa-shield-alt"></i> Admin'
+                adminBadge: '<i class="fas fa-crown"></i> Admin'
             }
         };
 
@@ -463,7 +479,7 @@
 
         msgTextInput.addEventListener('focus', () => {
             const name = userNameInput.value.trim();
-            if (!name) {
+            if (!name && !isAdminUser) {
                 msgTextInput.blur();
                 showToast(LANG_DICT[currentLang].mustEnterName);
                 userNameInput.focus();
@@ -473,8 +489,9 @@
         function renderFailedMessage(name, text) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message mine failed`;
+            const senderText = name ? escapeHTML(name) : '';
             msgDiv.innerHTML = `
-                <div class="sender-name">${escapeHTML(name)}</div>
+                <div class="sender-name">${senderText}</div>
                 <div class="text">
                     ${escapeHTML(text)}
                     <div style="font-size: 9px; margin-top: 4px; color: #cc0000;">${LANG_DICT[currentLang].sendFailed}</div>
@@ -499,11 +516,11 @@
 
             const nowTime = getTrueServerTime();
 
-            if (!userNameInput.readOnly) {
+            if (!userNameInput.readOnly && (name || isAdminUser)) {
                 localStorage.setItem('twaiqChatName', name);
                 localStorage.setItem('twaiqNameLastEdit', nowTime.toString());
                 
-                if(userId !== 'default') {
+                if(userId !== 'default' && name) {
                     set(userProfileRef, { name: name, lastEdit: nowTime }).catch(()=>{});
                 }
 
@@ -550,7 +567,7 @@
             const name = userNameInput.value.trim();
             const text = msgTextInput.value.trim();
 
-            if (!name) {
+            if (!name && !isAdminUser) {
                 showToast(LANG_DICT[currentLang].mustEnterName);
                 userNameInput.focus();
                 return;
@@ -579,8 +596,9 @@
             const isMine = (msgUid === userId && userId !== 'default') || 
                            (data.sender === userNameInput.value.trim() && data.sender !== '');
 
-            const isAdmin = ADMIN_UIDS.includes(msgUid);
-            const badgeHtml = isAdmin ? `<span class="admin-badge">${LANG_DICT[currentLang].adminBadge}</span>` : '';
+            const isMsgAdmin = ADMIN_UIDS.includes(msgUid);
+            const badgeHtml = isMsgAdmin ? `<span class="admin-badge">${LANG_DICT[currentLang].adminBadge}</span>` : '';
+            const senderText = data.sender ? escapeHTML(data.sender) : '';
 
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${isMine ? 'mine' : 'others'}`;
@@ -592,7 +610,7 @@
             }
 
             msgDiv.innerHTML = `
-                <div class="sender-name">${escapeHTML(data.sender)} ${badgeHtml}</div>
+                <div class="sender-name">${senderText} ${badgeHtml}</div>
                 <div class="text">${escapeHTML(data.text)}${spinnerHtml}</div>
             `;
 
