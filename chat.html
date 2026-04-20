@@ -38,6 +38,23 @@
             100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
 
+        .loader-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #faf9f7; z-index: 1000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .spinner {
+            width: 45px; height: 45px; border: 4px solid #e4ddd4;
+            border-top-color: #b8935a; border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .loader-text { font-size: 14px; font-weight: 700; color: #7d6b52; }
+
         .chat-header {
             background: #fff; padding: 20px; border-bottom: 1px solid #f0ece4;
             display: flex; align-items: center; gap: 12px; z-index: 10;
@@ -97,6 +114,16 @@
         html[dir="ltr"] .message.others .text { border-bottom-left-radius: 16px; border-bottom-right-radius: 4px; }
         .message.others .sender-name { text-align: left; }
         html[dir="ltr"] .message.others .sender-name { text-align: right; }
+
+        .message.failed .text {
+            background: #fff2f2; color: #cc0000; border: 1px solid #ffcccc;
+        }
+        
+        .retry-btn {
+            display: flex; align-items: center; gap: 4px; margin-top: 6px;
+            font-size: 10px; font-weight: 800; color: #cc0000; cursor: pointer;
+            background: none; border: none; padding: 0;
+        }
 
         .chat-input-area {
             background: #fff; padding: 15px; border-top: 1px solid #f0ece4;
@@ -177,6 +204,12 @@
 <body>
 
     <div class="chat-card" id="chatCard">
+        
+        <div class="loader-overlay" id="loaderOverlay">
+            <div class="spinner"></div>
+            <div class="loader-text" id="loaderText">جاري تحميل المحادثات...</div>
+        </div>
+
         <div class="chat-header">
             <div class="close-btn" id="closeChatBtn"><i class="fas fa-times"></i></div>
             <i class="fas fa-comments"></i>
@@ -207,7 +240,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, serverTimestamp, goOffline, goOnline, onValue, set } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, serverTimestamp, goOffline, goOnline, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAlSb2RsFDei6KFh2VvrKyM-ydDrhxV3aE",
@@ -236,6 +269,7 @@
         const sendBtn = document.getElementById('sendBtn');
         const closeChatBtn = document.getElementById('closeChatBtn');
         const toastMsg = document.getElementById('toastMsg');
+        const loaderOverlay = document.getElementById('loaderOverlay');
 
         const LANG_DICT = {
             ar: {
@@ -248,7 +282,10 @@
                 msgPlaceholder: 'اكتب رسالتك...',
                 mustEnterName: 'يجب اختيار اسم أولاً قبل الكتابة',
                 toastWait1: 'يرجى الانتظار ',
-                toastWait2: ' دقيقة لتعديل الاسم مجدداً'
+                toastWait2: ' دقيقة لتعديل الاسم مجدداً',
+                loading: 'جاري تحميل المحادثات...',
+                retry: 'إعادة المحاولة',
+                sendFailed: 'لم يتم الإرسال'
             },
             en: {
                 dir: 'ltr',
@@ -260,7 +297,10 @@
                 msgPlaceholder: 'Type your message...',
                 mustEnterName: 'You must enter a name first',
                 toastWait1: 'Please wait ',
-                toastWait2: ' minutes to edit name again'
+                toastWait2: ' minutes to edit name again',
+                loading: 'Loading messages...',
+                retry: 'Retry',
+                sendFailed: 'Not sent'
             }
         };
 
@@ -282,8 +322,16 @@
             document.getElementById('userName').placeholder = d.namePlaceholder;
             document.getElementById('nameLabelText').innerText = d.nameLabel;
             document.getElementById('msgText').placeholder = d.msgPlaceholder;
+            document.getElementById('loaderText').innerText = d.loading;
         }
         applyLanguage();
+
+        function hideLoader() {
+            loaderOverlay.style.opacity = '0';
+            setTimeout(() => { loaderOverlay.style.visibility = 'hidden'; }, 300);
+        }
+
+        get(chatRef).then(hideLoader).catch(hideLoader);
 
         function setRealVh() {
             let vh = window.innerHeight;
@@ -390,18 +438,27 @@
             }
         });
 
-        function sendMessage() {
-            const name = userNameInput.value.trim();
-            const text = msgTextInput.value.trim();
+        function renderFailedMessage(name, text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message mine failed`;
+            msgDiv.innerHTML = `
+                <div class="sender-name">${escapeHTML(name)}</div>
+                <div class="text">
+                    ${escapeHTML(text)}
+                    <button class="retry-btn"><i class="fas fa-redo-alt"></i> ${LANG_DICT[currentLang].retry}</button>
+                </div>
+            `;
+            
+            msgDiv.querySelector('.retry-btn').addEventListener('click', () => {
+                msgDiv.remove();
+                executeSend(name, text);
+            });
 
-            if (!name) {
-                showToast(LANG_DICT[currentLang].mustEnterName);
-                userNameInput.focus();
-                return;
-            }
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
 
-            if (text === '') return;
-
+        function executeSend(name, text) {
             const nowTime = getTrueServerTime();
 
             if (!userNameInput.readOnly) {
@@ -421,9 +478,26 @@
                 sender: name,
                 text: text,
                 timestamp: serverTimestamp()
+            }).then(() => {
+                set(ref(db, 'notifications/last_msg_tick'), nowTime).catch(()=>{});
+            }).catch(() => {
+                renderFailedMessage(name, text);
             });
+        }
 
-            set(ref(db, 'notifications/last_msg_tick'), nowTime).catch(()=>{});
+        function sendMessage() {
+            const name = userNameInput.value.trim();
+            const text = msgTextInput.value.trim();
+
+            if (!name) {
+                showToast(LANG_DICT[currentLang].mustEnterName);
+                userNameInput.focus();
+                return;
+            }
+
+            if (text === '') return;
+
+            executeSend(name, text);
 
             msgTextInput.value = '';
             msgTextInput.focus();
