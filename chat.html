@@ -655,7 +655,7 @@
             }
         });
 
-        function escapeHTML(str) {
+                function escapeHTML(str) {
             if (!str) return '';
             let escaped = str.replace(/[&<>'"]/g, 
                 tag => ({
@@ -666,8 +666,9 @@
                     '"': '&quot;'
                 }[tag] || tag)
             );
-            return escaped.replace(/\n/g, '<br>');
+            return escaped.replace(/\n/g, '<br>').replace(/\\n/g, '<br>');
         }
+
     </script>
 </body>
 </html>
