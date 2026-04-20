@@ -125,6 +125,15 @@
             background: none; border: none; padding: 0;
         }
 
+        .msg-spinner {
+            display: inline-block; width: 10px; height: 10px; 
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle; margin-right: 8px;
+        }
+        html[dir="ltr"] .msg-spinner { margin-right: 0; margin-left: 8px; }
+
         .chat-input-area {
             background: #fff; padding: 15px; border-top: 1px solid #f0ece4;
             display: flex; flex-direction: column; gap: 10px; 
@@ -240,7 +249,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, serverTimestamp, goOffline, goOnline, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, onChildRemoved, serverTimestamp, goOffline, goOnline, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAlSb2RsFDei6KFh2VvrKyM-ydDrhxV3aE",
@@ -271,6 +280,8 @@
         const toastMsg = document.getElementById('toastMsg');
         const loaderOverlay = document.getElementById('loaderOverlay');
 
+        const pendingMessages = new Set();
+
         const LANG_DICT = {
             ar: {
                 dir: 'rtl',
@@ -285,7 +296,7 @@
                 toastWait2: ' دقيقة لتعديل الاسم مجدداً',
                 loading: 'جاري تحميل المحادثات...',
                 retry: 'إعادة المحاولة',
-                sendFailed: 'لم يتم الإرسال'
+                sendFailed: 'تعذر الإرسال، تحقق من اتصالك'
             },
             en: {
                 dir: 'ltr',
@@ -300,7 +311,7 @@
                 toastWait2: ' minutes to edit name again',
                 loading: 'Loading messages...',
                 retry: 'Retry',
-                sendFailed: 'Not sent'
+                sendFailed: 'Failed to send, check connection'
             }
         };
 
@@ -445,6 +456,7 @@
                 <div class="sender-name">${escapeHTML(name)}</div>
                 <div class="text">
                     ${escapeHTML(text)}
+                    <div style="font-size: 9px; margin-top: 4px; color: #cc0000;">${LANG_DICT[currentLang].sendFailed}</div>
                     <button class="retry-btn"><i class="fas fa-redo-alt"></i> ${LANG_DICT[currentLang].retry}</button>
                 </div>
             `;
@@ -459,6 +471,11 @@
         }
 
         function executeSend(name, text) {
+            if (!navigator.onLine) {
+                renderFailedMessage(name, text);
+                return;
+            }
+
             const nowTime = getTrueServerTime();
 
             if (!userNameInput.readOnly) {
@@ -473,16 +490,39 @@
                 isNameRegistered = true;
             }
 
-            push(chatRef, {
+            const newMsgRef = push(chatRef);
+            const msgKey = newMsgRef.key;
+            pendingMessages.add(msgKey);
+            let isConfirmed = false;
+
+            set(newMsgRef, {
                 uid: userId,
                 sender: name,
                 text: text,
                 timestamp: serverTimestamp()
             }).then(() => {
+                isConfirmed = true;
+                pendingMessages.delete(msgKey);
+                const s = document.getElementById(`spinner-${msgKey}`);
+                if (s) s.remove();
                 set(ref(db, 'notifications/last_msg_tick'), nowTime).catch(()=>{});
             }).catch(() => {
-                renderFailedMessage(name, text);
+                if (!isConfirmed) {
+                    isConfirmed = true;
+                    pendingMessages.delete(msgKey);
+                    set(newMsgRef, null).catch(()=>{});
+                    renderFailedMessage(name, text);
+                }
             });
+
+            setTimeout(() => {
+                if (!isConfirmed) {
+                    isConfirmed = true;
+                    pendingMessages.delete(msgKey);
+                    set(newMsgRef, null).catch(()=>{});
+                    renderFailedMessage(name, text);
+                }
+            }, 7000); 
         }
 
         function sendMessage() {
@@ -520,14 +560,27 @@
 
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${isMine ? 'mine' : 'others'}`;
+            msgDiv.setAttribute('data-key', snapshot.key);
             
+            let spinnerHtml = '';
+            if (pendingMessages.has(snapshot.key)) {
+                spinnerHtml = `<span class="msg-spinner" id="spinner-${snapshot.key}"></span>`;
+            }
+
             msgDiv.innerHTML = `
                 <div class="sender-name">${escapeHTML(data.sender)}</div>
-                <div class="text">${escapeHTML(data.text)}</div>
+                <div class="text">${escapeHTML(data.text)}${spinnerHtml}</div>
             `;
 
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        onChildRemoved(chatRef, (snapshot) => {
+            const msgDiv = document.querySelector(`[data-key="${snapshot.key}"]`);
+            if (msgDiv) {
+                msgDiv.remove();
+            }
         });
 
         function escapeHTML(str) {
