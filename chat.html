@@ -34,6 +34,20 @@
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             overflow: hidden;
             animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                        height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                        max-width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                        max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                        border-radius 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .chat-card.expanded {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
+            max-height: 100% !important;
+            border-radius: 0 !important;
+            border: none !important;
         }
 
         @keyframes popIn {
@@ -69,17 +83,22 @@
         .chat-header h2 { font-size: 18px; color: #1d1b20; font-weight: 800; margin-bottom: 2px;}
         .chat-header p { font-size: 11px; color: #7d6b52; font-weight: 600;}
 
-        .close-btn {
-            position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+        .close-btn, .expand-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
             background: #faf9f7; border: 1px solid #f0ece4; color: #1d1b20;
             width: 32px; height: 32px; border-radius: 50%; display: flex;
             justify-content: center; align-items: center; cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
+
+        .close-btn { left: 20px; }
+        .expand-btn { left: 60px; }
         
         html[dir="ltr"] .close-btn { left: auto; right: 20px; }
-        .close-btn:active { transform: translateY(-50%) scale(0.9); }
-        .close-btn i { font-size: 14px; }
+        html[dir="ltr"] .expand-btn { left: auto; right: 60px; }
+        
+        .close-btn:active, .expand-btn:active { transform: translateY(-50%) scale(0.9); }
+        .close-btn i, .expand-btn i { font-size: 14px; transition: transform 0.3s ease; }
 
         .chat-messages {
             flex-grow: 1; padding: 20px; overflow-y: auto;
@@ -286,6 +305,7 @@
 
         <div class="chat-header">
             <div class="close-btn" id="closeChatBtn"><i class="fas fa-times"></i></div>
+            <div class="expand-btn" id="expandChatBtn"><i class="fas fa-expand"></i></div>
             <i class="fas fa-comments"></i>
             <div>
                 <h2 id="chatTitle">محادثة جماعية</h2>
@@ -342,12 +362,14 @@
         const chatRef = ref(db, 'global_messages');
         const userProfileRef = ref(db, 'chat_users/' + userId);
 
+        const chatCard = document.getElementById('chatCard');
         const chatBox = document.getElementById('chatBox');
         const userContainer = document.getElementById('userContainer');
         const userNameInput = document.getElementById('userName');
         const msgTextInput = document.getElementById('msgText');
         const sendBtn = document.getElementById('sendBtn');
         const closeChatBtn = document.getElementById('closeChatBtn');
+        const expandChatBtn = document.getElementById('expandChatBtn');
         const toastMsg = document.getElementById('toastMsg');
         const loaderOverlay = document.getElementById('loaderOverlay');
 
@@ -460,6 +482,19 @@
         closeChatBtn.addEventListener('click', function() {
             killConnection();
             window.location.href = "ninja://close";
+        });
+
+        expandChatBtn.addEventListener('click', function() {
+            chatCard.classList.toggle('expanded');
+            const icon = expandChatBtn.querySelector('i');
+            if (chatCard.classList.contains('expanded')) {
+                icon.classList.remove('fa-expand');
+                icon.classList.add('fa-compress');
+            } else {
+                icon.classList.remove('fa-compress');
+                icon.classList.add('fa-expand');
+            }
+            setTimeout(() => { if(chatBox) chatBox.scrollTop = chatBox.scrollHeight; }, 400);
         });
 
         function lockNameInput() {
