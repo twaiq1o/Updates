@@ -407,12 +407,12 @@
             }
         };
 
-        let currentLang = 'ar';
+        let currentLang = 'en';
         try {
             let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-            currentLang = sysLang.startsWith('en') ? 'en' : 'ar';
+            currentLang = sysLang.startsWith('ar') ? 'ar' : 'en';
         } catch (e) {
-            currentLang = 'ar';
+            currentLang = 'en';
         }
 
         function applyLanguage() {
