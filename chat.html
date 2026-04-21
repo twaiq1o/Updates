@@ -524,9 +524,22 @@
         function renderFailedMessage(name, text) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message mine failed`;
+            
+            const currentSenderId = (userId !== 'default' ? userId : 'unknown') + '|' + (name || '');
+            msgDiv.setAttribute('data-sender-id', currentSenderId);
+
+            let showName = true;
+            const lastMsg = chatBox.lastElementChild;
+            if (lastMsg && lastMsg.getAttribute('data-sender-id') === currentSenderId) {
+                showName = false;
+                msgDiv.style.marginTop = '-10px';
+            }
+
             const senderText = name ? escapeHTML(name) : '';
+            const nameHtml = showName ? `<div class="sender-name">${senderText}</div>` : '';
+
             msgDiv.innerHTML = `
-                <div class="sender-name">${senderText}</div>
+                ${nameHtml}
                 <div class="text">
                     ${escapeHTML(text)}
                     <div style="font-size: 9px; margin-top: 4px; color: #cc0000;">${LANG_DICT[currentLang].sendFailed}</div>
@@ -639,13 +652,25 @@
             msgDiv.className = `message ${isMine ? 'mine' : 'others'}`;
             msgDiv.setAttribute('data-key', snapshot.key);
             
+            const currentSenderId = msgUid + '|' + (data.sender || '');
+            msgDiv.setAttribute('data-sender-id', currentSenderId);
+
+            let showName = true;
+            const lastMsg = chatBox.lastElementChild;
+            if (lastMsg && lastMsg.getAttribute('data-sender-id') === currentSenderId) {
+                showName = false;
+                msgDiv.style.marginTop = '-10px';
+            }
+
             let spinnerHtml = '';
             if (pendingMessages.has(snapshot.key)) {
                 spinnerHtml = `<span class="msg-spinner" id="spinner-${snapshot.key}"></span>`;
             }
 
+            const nameHtml = showName ? `<div class="sender-name">${senderText} ${badgeHtml}</div>` : '';
+
             msgDiv.innerHTML = `
-                <div class="sender-name">${senderText} ${badgeHtml}</div>
+                ${nameHtml}
                 <div class="text">${escapeHTML(data.text)}${spinnerHtml}</div>
             `;
 
