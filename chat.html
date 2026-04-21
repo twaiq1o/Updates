@@ -104,7 +104,8 @@
         .message .text {
             padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.5;
             word-wrap: break-word; font-weight: 500;
-            white-space: pre-wrap;
+            white-space: pre-wrap; position: relative;
+            min-width: 70px;
         }
 
         .message.mine { align-self: flex-start; }
@@ -214,65 +215,80 @@
         .toast-msg.show { opacity: 1; }
 
         .admin-badge {
-            position: relative;
-            padding: 4px 12px;
-            border-radius: 14px;
-            font-size: 10px;
-            font-weight: 800;
-            margin: 0 4px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            vertical-align: middle;
-            color: #ffffff; 
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(139, 0, 0, 0.5);
-            z-index: 1;
-            border: none; 
-
+            position: relative; padding: 4px 12px; border-radius: 14px; font-size: 10px;
+            font-weight: 800; margin: 0 4px; display: inline-flex; align-items: center;
+            gap: 4px; vertical-align: middle; color: #ffffff; overflow: hidden;
+            box-shadow: 0 2px 10px rgba(139, 0, 0, 0.5); z-index: 1; border: none; 
             animation: badgeShimmerText 1.5s infinite alternate ease-in-out;
         }
 
         .admin-badge::before {
-            content: '';
-            position: absolute;
-            top: -100%;
-            left: -100%;
-            width: 300%;
-            height: 300%;
-
+            content: ''; position: absolute; top: -100%; left: -100%; width: 300%; height: 300%;
             background: conic-gradient(from 0deg, transparent 70%, #ffffff 100%);
-            animation: wormSpin 2s linear infinite;
-            z-index: -2;
+            animation: wormSpin 2s linear infinite; z-index: -2;
         }
 
         .admin-badge::after {
-            content: '';
-            position: absolute;
-            inset: 1.5px; 
+            content: ''; position: absolute; inset: 1.5px; 
             background: linear-gradient(135deg, #5c0000, #8b0000); 
-            border-radius: 12px;
-            z-index: -1;
+            border-radius: 12px; z-index: -1;
         }
 
-        @keyframes wormSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
+        @keyframes wormSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes badgeShimmerText {
             0% { text-shadow: 0 0 2px rgba(255, 255, 255, 0.3); }
             100% { text-shadow: 0 0 8px rgba(255, 255, 255, 0.9), 0 0 15px rgba(255, 255, 255, 0.6); }
         }
 
-        .admin-badge i {
-            color: inherit;
-            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
-        }
+        .admin-badge i { color: inherit; filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8)); }
 
-        .admin-badge i {
-            color: inherit;
+        .reply-preview-container {
+            display: none; background: #faf9f7; border: 1px solid #e4ddd4;
+            border-right: 4px solid #b8935a; border-radius: 12px;
+            padding: 10px 15px; margin-bottom: 10px; position: relative;
+            animation: fadeIn 0.2s ease;
         }
+        html[dir="ltr"] .reply-preview-container { border-right: 1px solid #e4ddd4; border-left: 4px solid #b8935a; }
+        .reply-preview-container.active { display: block; }
+        .reply-close {
+            position: absolute; top: 10px; left: 15px; background: #f0ece4;
+            width: 22px; height: 22px; border-radius: 50%; display: flex;
+            justify-content: center; align-items: center; font-size: 10px;
+            color: #7d6b52; cursor: pointer; transition: 0.2s;
+        }
+        .reply-close:active { transform: scale(0.9); }
+        html[dir="ltr"] .reply-close { left: auto; right: 15px; }
+        .reply-preview-header { font-size: 11px; font-weight: 800; color: #b8935a; margin-bottom: 2px; }
+        .reply-preview-text { font-size: 12px; color: #7d6b52; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-left: 30px; }
+        html[dir="ltr"] .reply-preview-text { margin-left: 0; margin-right: 30px; }
+
+        .msg-actions-inline {
+            display: flex; gap: 12px; justify-content: flex-end;
+            font-size: 12px; margin-top: 6px; opacity: 0.8;
+        }
+        .msg-actions-inline i { cursor: pointer; transition: transform 0.2s; padding: 4px; }
+        .msg-actions-inline i:active { transform: scale(0.85); }
+        .message.others .msg-actions-inline { color: #a59b8d; }
+        .message.mine .msg-actions-inline { color: rgba(255,255,255,0.8); }
+
+        .translated-text {
+            margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.08);
+            font-size: 12px; font-weight: 600; color: #444; line-height: 1.5;
+        }
+        .message.mine .translated-text { border-top-color: rgba(255,255,255,0.2); color: #fff; }
+
+        .quoted-msg {
+            background: rgba(0,0,0,0.04); border-right: 3px solid #b8935a;
+            padding: 6px 10px; border-radius: 6px; margin-bottom: 8px;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        html[dir="ltr"] .quoted-msg { border-right: none; border-left: 3px solid #b8935a; }
+        .message.mine .quoted-msg { background: rgba(0,0,0,0.1); border-color: #fff; }
+        .quoted-msg:active { opacity: 0.7; }
+        .quote-sender { font-size: 10px; font-weight: 800; margin-bottom: 2px; color: #b8935a; }
+        .message.mine .quote-sender { color: #fff; }
+        .quote-text { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.9; }
+
     </style>
 </head>
 <body>
@@ -296,6 +312,12 @@
         <div class="chat-messages" id="chatBox"></div>
 
         <div class="chat-input-area">
+            <div class="reply-preview-container" id="replyPreviewContainer">
+                <div class="reply-close" onclick="window.cancelReply()"><i class="fas fa-times"></i></div>
+                <div class="reply-preview-header" id="replyPreviewName"></div>
+                <div class="reply-preview-text" id="replyPreviewText"></div>
+            </div>
+            
             <div class="username-container" id="userContainer">
                 <div class="user-label-group">
                     <i class="fas fa-user"></i>
@@ -352,6 +374,7 @@
         const loaderOverlay = document.getElementById('loaderOverlay');
 
         const pendingMessages = new Set();
+        window.currentReplyTo = null;
 
         const LANG_DICT = {
             ar: {
@@ -409,6 +432,44 @@
             document.getElementById('loaderText').innerText = d.loading;
         }
         applyLanguage();
+
+        window.setReply = function(id, sender, text) {
+            window.currentReplyTo = { id, sender, text };
+            document.getElementById('replyPreviewName').innerText = sender || LANG_DICT[currentLang].nameLabel;
+            document.getElementById('replyPreviewText').innerText = text;
+            document.getElementById('replyPreviewContainer').classList.add('active');
+            msgTextInput.focus();
+        };
+
+        window.cancelReply = function() {
+            window.currentReplyTo = null;
+            const container = document.getElementById('replyPreviewContainer');
+            if (container) container.classList.remove('active');
+        };
+
+        window.translateMsg = async function(btn, text, container) {
+            let transDiv = container.querySelector('.translated-text');
+            if (transDiv) {
+                transDiv.remove();
+                return;
+            }
+            btn.classList.remove('fa-language');
+            btn.classList.add('fa-spinner', 'fa-spin');
+            try {
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLang}&dt=t&q=${encodeURIComponent(text)}`);
+                const data = await res.json();
+                const translated = data[0].map(item => item[0]).join('');
+                transDiv = document.createElement('div');
+                transDiv.className = 'translated-text';
+                transDiv.innerText = translated;
+                container.insertBefore(transDiv, container.querySelector('.msg-actions-inline'));
+            } catch(e) {
+                showToast(LANG_DICT[currentLang].sendFailed);
+            } finally {
+                btn.classList.remove('fa-spinner', 'fa-spin');
+                btn.classList.add('fa-language');
+            }
+        };
 
         function hideLoader() {
             loaderOverlay.style.opacity = '0';
@@ -521,7 +582,7 @@
             }
         });
 
-        function renderFailedMessage(name, text) {
+        function renderFailedMessage(name, text, replyToObj) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message mine failed`;
             
@@ -532,36 +593,60 @@
             const lastMsg = chatBox.lastElementChild;
             if (lastMsg && lastMsg.getAttribute('data-sender-id') === currentSenderId) {
                 showName = false;
-                msgDiv.style.marginTop = '-10px';
+                msgDiv.style.marginTop = '-4px';
             }
 
-            const senderText = name ? escapeHTML(name) : '';
-            const nameHtml = showName ? `<div class="sender-name">${senderText}</div>` : '';
+            if (showName) {
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'sender-name';
+                nameDiv.innerText = name ? name : '';
+                msgDiv.appendChild(nameDiv);
+            }
 
-            msgDiv.innerHTML = `
-                ${nameHtml}
-                <div class="text">
-                    ${escapeHTML(text)}
-                    <div style="font-size: 9px; margin-top: 4px; color: #cc0000;">${LANG_DICT[currentLang].sendFailed}</div>
-                    <button class="retry-btn"><i class="fas fa-redo-alt"></i> ${LANG_DICT[currentLang].retry}</button>
-                </div>
-            `;
+            const textWrapper = document.createElement('div');
+            textWrapper.className = 'text';
+
+            if (replyToObj) {
+                const quoteDiv = document.createElement('div');
+                quoteDiv.className = 'quoted-msg';
+                quoteDiv.innerHTML = `
+                    <div class="quote-sender">${escapeHTML(replyToObj.sender || '')}</div>
+                    <div class="quote-text">${escapeHTML(replyToObj.text || '')}</div>
+                `;
+                textWrapper.appendChild(quoteDiv);
+            }
+
+            const actualText = document.createElement('div');
+            actualText.style.wordWrap = 'break-word';
+            actualText.innerHTML = escapeHTML(text);
+            actualText.innerHTML += `<div style="font-size: 9px; margin-top: 4px; color: #cc0000;">${LANG_DICT[currentLang].sendFailed}</div>`;
             
-            msgDiv.querySelector('.retry-btn').addEventListener('click', () => {
+            const retryBtn = document.createElement('button');
+            retryBtn.className = 'retry-btn';
+            retryBtn.innerHTML = `<i class="fas fa-redo-alt"></i> ${LANG_DICT[currentLang].retry}`;
+            retryBtn.addEventListener('click', () => {
                 msgDiv.remove();
+                window.currentReplyTo = replyToObj;
                 executeSend(name, text);
             });
+            actualText.appendChild(retryBtn);
 
+            textWrapper.appendChild(actualText);
+            msgDiv.appendChild(textWrapper);
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         function executeSend(name, text) {
+            const replyPayload = window.currentReplyTo;
+            
             if (!navigator.onLine) {
-                renderFailedMessage(name, text);
+                window.cancelReply();
+                renderFailedMessage(name, text, replyPayload);
                 return;
             }
 
+            window.cancelReply();
             const nowTime = getTrueServerTime();
 
             if (!userNameInput.readOnly && (name || isAdminUser)) {
@@ -581,12 +666,18 @@
             pendingMessages.add(msgKey);
             let isConfirmed = false;
 
-            set(newMsgRef, {
+            const payload = {
                 uid: userId,
                 sender: name,
                 text: text,
                 timestamp: serverTimestamp()
-            }).then(() => {
+            };
+
+            if (replyPayload) {
+                payload.replyTo = replyPayload;
+            }
+
+            set(newMsgRef, payload).then(() => {
                 isConfirmed = true;
                 pendingMessages.delete(msgKey);
                 const s = document.getElementById(`spinner-${msgKey}`);
@@ -597,7 +688,7 @@
                     isConfirmed = true;
                     pendingMessages.delete(msgKey);
                     set(newMsgRef, null).catch(()=>{});
-                    renderFailedMessage(name, text);
+                    renderFailedMessage(name, text, replyPayload);
                 }
             });
 
@@ -606,7 +697,7 @@
                     isConfirmed = true;
                     pendingMessages.delete(msgKey);
                     set(newMsgRef, null).catch(()=>{});
-                    renderFailedMessage(name, text);
+                    renderFailedMessage(name, text, replyPayload);
                 }
             }, 7000); 
         }
@@ -625,6 +716,7 @@
             executeSend(name, text);
 
             msgTextInput.value = '';
+            msgTextInput.style.height = '44px';
             msgTextInput.focus();
         }
 
@@ -659,20 +751,62 @@
             const lastMsg = chatBox.lastElementChild;
             if (lastMsg && lastMsg.getAttribute('data-sender-id') === currentSenderId) {
                 showName = false;
-                msgDiv.style.marginTop = '-10px';
+                msgDiv.style.marginTop = '-4px';
             }
 
-            let spinnerHtml = '';
+            if (showName) {
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'sender-name';
+                nameDiv.innerHTML = `${senderText} ${badgeHtml}`;
+                msgDiv.appendChild(nameDiv);
+            }
+
+            const textWrapper = document.createElement('div');
+            textWrapper.className = 'text';
+
+            if (data.replyTo) {
+                const quoteDiv = document.createElement('div');
+                quoteDiv.className = 'quoted-msg';
+                quoteDiv.innerHTML = `
+                    <div class="quote-sender">${escapeHTML(data.replyTo.sender || '')}</div>
+                    <div class="quote-text">${escapeHTML(data.replyTo.text || '')}</div>
+                `;
+                quoteDiv.addEventListener('click', () => {
+                    const target = document.querySelector(`[data-key="${data.replyTo.id}"]`);
+                    if(target) {
+                        target.scrollIntoView({behavior: 'smooth', block: 'center'});
+                        target.style.transition = 'transform 0.3s';
+                        target.style.transform = 'scale(1.02)';
+                        setTimeout(() => target.style.transform = 'scale(1)', 300);
+                    }
+                });
+                textWrapper.appendChild(quoteDiv);
+            }
+
+            const actualText = document.createElement('div');
+            actualText.style.wordWrap = 'break-word';
+            actualText.innerHTML = escapeHTML(data.text);
+            
             if (pendingMessages.has(snapshot.key)) {
-                spinnerHtml = `<span class="msg-spinner" id="spinner-${snapshot.key}"></span>`;
+                actualText.innerHTML += `<span class="msg-spinner" id="spinner-${snapshot.key}"></span>`;
             }
+            textWrapper.appendChild(actualText);
 
-            const nameHtml = showName ? `<div class="sender-name">${senderText} ${badgeHtml}</div>` : '';
+            const actionsInline = document.createElement('div');
+            actionsInline.className = 'msg-actions-inline';
+            
+            const replyBtn = document.createElement('i');
+            replyBtn.className = 'fas fa-reply';
+            replyBtn.addEventListener('click', () => window.setReply(snapshot.key, data.sender, data.text));
+            actionsInline.appendChild(replyBtn);
 
-            msgDiv.innerHTML = `
-                ${nameHtml}
-                <div class="text">${escapeHTML(data.text)}${spinnerHtml}</div>
-            `;
+            const transBtn = document.createElement('i');
+            transBtn.className = 'fas fa-language';
+            transBtn.addEventListener('click', (e) => window.translateMsg(e.target, data.text, textWrapper));
+            actionsInline.appendChild(transBtn);
+
+            textWrapper.appendChild(actionsInline);
+            msgDiv.appendChild(textWrapper);
 
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
