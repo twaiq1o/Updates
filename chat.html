@@ -27,8 +27,9 @@
             max-height: calc(100vh - 32px);
             max-height: calc(var(--vh, 100vh) - 32px);
             position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
+            top: 0; bottom: 0; left: 0; right: 0;
+            margin: auto;
+            opacity: 0;
             display: flex; flex-direction: column;
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             overflow: hidden;
@@ -36,8 +37,8 @@
         }
 
         @keyframes popIn {
-            0% { opacity: 0; transform: translate(-50%, -40%) scale(0.95); }
-            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .loader-overlay {
