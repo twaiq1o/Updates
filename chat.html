@@ -119,6 +119,11 @@
         .message.others .sender-name { text-align: left; }
         html[dir="ltr"] .message.others .sender-name { text-align: right; }
 
+        .message.consecutive.mine .text { border-top-right-radius: 4px; }
+        html[dir="ltr"] .message.consecutive.mine .text { border-top-left-radius: 4px; border-top-right-radius: 16px; }
+        .message.consecutive.others .text { border-top-left-radius: 4px; }
+        html[dir="ltr"] .message.consecutive.others .text { border-top-right-radius: 4px; border-top-left-radius: 16px; }
+
         .message.failed .text {
             background: #fff2f2; color: #cc0000; border: 1px solid #ffcccc;
         }
@@ -604,7 +609,8 @@
             const lastMsg = chatBox.lastElementChild;
             if (lastMsg && lastMsg.getAttribute('data-sender-id') === currentSenderId) {
                 showName = false;
-                msgDiv.style.marginTop = '-4px';
+                msgDiv.style.marginTop = '-12px';
+                msgDiv.classList.add('consecutive');
             }
 
             if (showName) {
@@ -791,6 +797,11 @@
                 if (isVerticalScroll) return;
 
                 let deltaX = currentX - startX;
+                const isRTL = currentLang === 'ar';
+                
+                if (isRTL && deltaX < 0) return; 
+                if (!isRTL && deltaX > 0) return; 
+
                 if (Math.abs(deltaX) > 50) { 
                     window.setReply(snapshotKey, sender, text);
                     if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(50);
@@ -820,7 +831,8 @@
             const lastMsg = chatBox.lastElementChild;
             if (lastMsg && lastMsg.getAttribute('data-sender-id') === currentSenderId) {
                 showName = false;
-                msgDiv.style.marginTop = '-4px';
+                msgDiv.style.marginTop = '-12px';
+                msgDiv.classList.add('consecutive');
             }
 
             if (showName) {
