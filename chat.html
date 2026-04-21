@@ -10,7 +10,7 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
         
-        input, textarea, .message .text { -webkit-user-select: text; user-select: text; }
+        input, textarea, .message .text, .actual-content { -webkit-user-select: text; user-select: text; }
 
         body { 
             background-color: transparent; 
@@ -82,7 +82,7 @@
         .close-btn i { font-size: 14px; }
 
         .chat-messages {
-            flex-grow: 1; padding: 20px; overflow-y: auto;
+            flex-grow: 1; padding: 20px; overflow-y: auto; overflow-x: hidden;
             display: flex; flex-direction: column; gap: 15px;
             background-color: #faf9f7;
         }
@@ -103,9 +103,8 @@
 
         .message .text {
             padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.5;
-            word-wrap: break-word; font-weight: 500;
-            white-space: pre-wrap; position: relative;
-            min-width: 70px;
+            font-weight: 500; position: relative; min-width: 70px;
+            will-change: transform;
         }
 
         .message.mine { align-self: flex-start; }
@@ -262,21 +261,6 @@
         .reply-preview-text { font-size: 12px; color: #7d6b52; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-left: 30px; }
         html[dir="ltr"] .reply-preview-text { margin-left: 0; margin-right: 30px; }
 
-        .msg-actions-inline {
-            display: flex; gap: 12px; justify-content: flex-end;
-            font-size: 12px; margin-top: 6px; opacity: 0.8;
-        }
-        .msg-actions-inline i { cursor: pointer; transition: transform 0.2s; padding: 4px; }
-        .msg-actions-inline i:active { transform: scale(0.85); }
-        .message.others .msg-actions-inline { color: #a59b8d; }
-        .message.mine .msg-actions-inline { color: rgba(255,255,255,0.8); }
-
-        .translated-text {
-            margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.08);
-            font-size: 12px; font-weight: 600; color: #444; line-height: 1.5;
-        }
-        .message.mine .translated-text { border-top-color: rgba(255,255,255,0.2); color: #fff; }
-
         .quoted-msg {
             background: rgba(0,0,0,0.04); border-right: 3px solid #b8935a;
             padding: 6px 10px; border-radius: 6px; margin-bottom: 8px;
@@ -289,6 +273,13 @@
         .message.mine .quote-sender { color: #fff; }
         .quote-text { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.9; }
 
+        .actual-content { display: inline; word-wrap: break-word; white-space: pre-wrap; }
+        .trans-btn-inline {
+            display: inline-block; margin: 0 8px; font-size: 13px; color: #a59b8d;
+            cursor: pointer; transition: 0.2s; opacity: 0.8; vertical-align: middle;
+        }
+        .message.mine .trans-btn-inline { color: rgba(255,255,255,0.8); }
+        .trans-btn-inline:active { transform: scale(0.85); }
     </style>
 </head>
 <body>
@@ -433,6 +424,15 @@
         }
         applyLanguage();
 
+        function isDiffLang(text, sysLang) {
+            if (!text) return false;
+            const arMatches = text.match(/[\u0600-\u06FF]/g) || [];
+            const enMatches = text.match(/[a-zA-Z]/g) || [];
+            if (sysLang === 'ar' && enMatches.length > arMatches.length) return true;
+            if (sysLang === 'en' && arMatches.length > enMatches.length) return true;
+            return false;
+        }
+
         window.setReply = function(id, sender, text) {
             window.currentReplyTo = { id, sender, text };
             document.getElementById('replyPreviewName').innerText = sender || LANG_DICT[currentLang].nameLabel;
@@ -448,9 +448,12 @@
         };
 
         window.translateMsg = async function(btn, text, container) {
-            let transDiv = container.querySelector('.translated-text');
-            if (transDiv) {
-                transDiv.remove();
+            const contentSpan = container.querySelector('.actual-content');
+            if (btn.dataset.translated === 'true') {
+                contentSpan.innerHTML = escapeHTML(text);
+                btn.dataset.translated = 'false';
+                btn.classList.remove('fa-undo');
+                btn.classList.add('fa-language');
                 return;
             }
             btn.classList.remove('fa-language');
@@ -459,13 +462,12 @@
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLang}&dt=t&q=${encodeURIComponent(text)}`);
                 const data = await res.json();
                 const translated = data[0].map(item => item[0]).join('');
-                transDiv = document.createElement('div');
-                transDiv.className = 'translated-text';
-                transDiv.innerText = translated;
-                container.insertBefore(transDiv, container.querySelector('.msg-actions-inline'));
+                contentSpan.innerHTML = escapeHTML(translated);
+                btn.dataset.translated = 'true';
+                btn.classList.remove('fa-spinner', 'fa-spin');
+                btn.classList.add('fa-undo');
             } catch(e) {
                 showToast(LANG_DICT[currentLang].sendFailed);
-            } finally {
                 btn.classList.remove('fa-spinner', 'fa-spin');
                 btn.classList.add('fa-language');
             }
@@ -616,10 +618,9 @@
                 textWrapper.appendChild(quoteDiv);
             }
 
-            const actualText = document.createElement('div');
-            actualText.style.wordWrap = 'break-word';
-            actualText.innerHTML = escapeHTML(text);
-            actualText.innerHTML += `<div style="font-size: 9px; margin-top: 4px; color: #cc0000;">${LANG_DICT[currentLang].sendFailed}</div>`;
+            const msgBody = document.createElement('div');
+            msgBody.innerHTML = `<span class="actual-content">${escapeHTML(text)}</span>`;
+            msgBody.innerHTML += `<div style="font-size: 9px; margin-top: 4px; color: #cc0000;">${LANG_DICT[currentLang].sendFailed}</div>`;
             
             const retryBtn = document.createElement('button');
             retryBtn.className = 'retry-btn';
@@ -629,9 +630,9 @@
                 window.currentReplyTo = replyToObj;
                 executeSend(name, text);
             });
-            actualText.appendChild(retryBtn);
+            msgBody.appendChild(retryBtn);
 
-            textWrapper.appendChild(actualText);
+            textWrapper.appendChild(msgBody);
             msgDiv.appendChild(textWrapper);
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -729,6 +730,42 @@
             }
         });
 
+        function attachSwipeListener(element, snapshotKey, sender, text) {
+            let startX = 0, currentX = 0, isSwiping = false;
+            
+            element.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                isSwiping = true;
+                element.style.transition = 'none';
+            }, {passive: true});
+            
+            element.addEventListener('touchmove', (e) => {
+                if (!isSwiping) return;
+                currentX = e.touches[0].clientX;
+                let deltaX = currentX - startX;
+                const isRTL = currentLang === 'ar';
+                
+                if (isRTL && deltaX > 0) deltaX = 0; 
+                if (!isRTL && deltaX < 0) deltaX = 0; 
+                
+                if (Math.abs(deltaX) > 60) deltaX = Math.sign(deltaX) * (60 + (Math.abs(deltaX) - 60) * 0.2); 
+                element.style.transform = `translateX(${deltaX}px)`;
+            }, {passive: true});
+            
+            element.addEventListener('touchend', (e) => {
+                if (!isSwiping) return;
+                isSwiping = false;
+                element.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
+                element.style.transform = `translateX(0px)`;
+                
+                let deltaX = currentX - startX;
+                if (Math.abs(deltaX) > 50) { 
+                    window.setReply(snapshotKey, sender, text);
+                    if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(50);
+                }
+            });
+        }
+
         onChildAdded(chatRef, (snapshot) => {
             const data = snapshot.val();
             const msgUid = data.uid || 'unknown';
@@ -783,29 +820,28 @@
                 textWrapper.appendChild(quoteDiv);
             }
 
-            const actualText = document.createElement('div');
-            actualText.style.wordWrap = 'break-word';
-            actualText.innerHTML = escapeHTML(data.text);
+            const msgBody = document.createElement('div');
             
-            if (pendingMessages.has(snapshot.key)) {
-                actualText.innerHTML += `<span class="msg-spinner" id="spinner-${snapshot.key}"></span>`;
+            const actualContent = document.createElement('span');
+            actualContent.className = 'actual-content';
+            actualContent.innerHTML = escapeHTML(data.text);
+            msgBody.appendChild(actualContent);
+
+            if (isDiffLang(data.text, currentLang)) {
+                const transBtn = document.createElement('i');
+                transBtn.className = 'fas fa-language trans-btn-inline';
+                transBtn.dataset.translated = 'false';
+                transBtn.addEventListener('click', (e) => window.translateMsg(e.target, data.text, msgBody));
+                msgBody.appendChild(transBtn);
             }
-            textWrapper.appendChild(actualText);
 
-            const actionsInline = document.createElement('div');
-            actionsInline.className = 'msg-actions-inline';
+            if (pendingMessages.has(snapshot.key)) {
+                msgBody.innerHTML += `<span class="msg-spinner" id="spinner-${snapshot.key}"></span>`;
+            }
+            textWrapper.appendChild(msgBody);
             
-            const replyBtn = document.createElement('i');
-            replyBtn.className = 'fas fa-reply';
-            replyBtn.addEventListener('click', () => window.setReply(snapshot.key, data.sender, data.text));
-            actionsInline.appendChild(replyBtn);
+            attachSwipeListener(textWrapper, snapshot.key, data.sender, data.text);
 
-            const transBtn = document.createElement('i');
-            transBtn.className = 'fas fa-language';
-            transBtn.addEventListener('click', (e) => window.translateMsg(e.target, data.text, textWrapper));
-            actionsInline.appendChild(transBtn);
-
-            textWrapper.appendChild(actionsInline);
             msgDiv.appendChild(textWrapper);
 
             chatBox.appendChild(msgDiv);
