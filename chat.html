@@ -462,11 +462,16 @@
             btn.classList.add('fa-spinner', 'fa-spin');
             
             try {
-                const scriptUrl = "https://script.google.com/macros/s/AKfycbyp73DQNrvXK2hrqAoc-ZgeEls2U1btiZjp4-1uBXxn4TSork4MSgaQwbiiJQmSFaU/exec";
-                const targetLang = currentLang === 'ar' ? 'العربية' : 'English';
-                const fetchUrl = `${scriptUrl}?text=${encodeURIComponent(text)}&targetLang=${targetLang}`;
+                const workerUrl = "https://broken-band-51b2.allawy2015.workers.dev"; 
                 
-                const res = await fetch(fetchUrl);
+                const targetLang = currentLang === 'ar' ? 'العربية' : 'English';
+                
+                const res = await fetch(workerUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text, targetLang: targetLang })
+                });
+                
                 const data = await res.json();
                 
                 if (data.error) throw new Error("API Error");
