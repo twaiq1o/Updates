@@ -774,10 +774,7 @@
 
                 if (isVerticalScroll) return;
 
-                const isRTL = currentLang === 'ar';
-                
-                if (isRTL && deltaX < 0) deltaX = 0; 
-                if (!isRTL && deltaX > 0) deltaX = 0; 
+                if (deltaX < 0) deltaX = 0; 
                 
                 if (Math.abs(deltaX) > 60) {
                     deltaX = Math.sign(deltaX) * (60 + (Math.abs(deltaX) - 60) * 0.15);
@@ -797,10 +794,8 @@
                 if (isVerticalScroll) return;
 
                 let deltaX = currentX - startX;
-                const isRTL = currentLang === 'ar';
                 
-                if (isRTL && deltaX < 0) return; 
-                if (!isRTL && deltaX > 0) return; 
+                if (deltaX < 0) return; 
 
                 if (Math.abs(deltaX) > 50) { 
                     window.setReply(snapshotKey, sender, text);
