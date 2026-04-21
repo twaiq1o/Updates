@@ -459,10 +459,13 @@
             btn.classList.remove('fa-language');
             btn.classList.add('fa-spinner', 'fa-spin');
             try {
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLang}&dt=t&q=${encodeURIComponent(text)}`);
+                const scriptUrl = "https://script.google.com/macros/s/AKfycbyp73DQNrvXK2hrqAoc-ZgeEls2U1btiZjp4-1uBXxn4TSork4MSgaQwbiiJQmSFaU/exec";
+                const targetLang = currentLang === 'ar' ? 'العربية' : 'English';
+                const fetchUrl = `${scriptUrl}?text=${encodeURIComponent(text)}&targetLang=${targetLang}`;
+                const res = await fetch(fetchUrl);
                 const data = await res.json();
-                const translated = data[0].map(item => item[0]).join('');
-                contentSpan.innerHTML = escapeHTML(translated);
+                if (data.error) throw new Error("API Error");
+                contentSpan.innerHTML = escapeHTML(data.translation);
                 btn.dataset.translated = 'true';
                 btn.classList.remove('fa-spinner', 'fa-spin');
                 btn.classList.add('fa-undo');
@@ -761,8 +764,8 @@
 
                 const isRTL = currentLang === 'ar';
                 
-                if (isRTL && deltaX > 0) deltaX = 0; 
-                if (!isRTL && deltaX < 0) deltaX = 0; 
+                if (isRTL && deltaX < 0) deltaX = 0; 
+                if (!isRTL && deltaX > 0) deltaX = 0; 
                 
                 if (Math.abs(deltaX) > 60) {
                     deltaX = Math.sign(deltaX) * (60 + (Math.abs(deltaX) - 60) * 0.15);
