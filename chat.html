@@ -449,6 +449,7 @@
 
         window.translateMsg = async function(btn, text, container) {
             const contentSpan = container.querySelector('.actual-content');
+            
             if (btn.dataset.translated === 'true') {
                 contentSpan.innerHTML = escapeHTML(text);
                 btn.dataset.translated = 'false';
@@ -456,15 +457,20 @@
                 btn.classList.add('fa-language');
                 return;
             }
+            
             btn.classList.remove('fa-language');
             btn.classList.add('fa-spinner', 'fa-spin');
+            
             try {
                 const scriptUrl = "https://script.google.com/macros/s/AKfycbyp73DQNrvXK2hrqAoc-ZgeEls2U1btiZjp4-1uBXxn4TSork4MSgaQwbiiJQmSFaU/exec";
                 const targetLang = currentLang === 'ar' ? 'العربية' : 'English';
                 const fetchUrl = `${scriptUrl}?text=${encodeURIComponent(text)}&targetLang=${targetLang}`;
+                
                 const res = await fetch(fetchUrl);
                 const data = await res.json();
+                
                 if (data.error) throw new Error("API Error");
+                
                 contentSpan.innerHTML = escapeHTML(data.translation);
                 btn.dataset.translated = 'true';
                 btn.classList.remove('fa-spinner', 'fa-spin');
