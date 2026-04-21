@@ -731,25 +731,46 @@
         });
 
         function attachSwipeListener(element, snapshotKey, sender, text) {
-            let startX = 0, currentX = 0, isSwiping = false;
+            let startX = 0, startY = 0, currentX = 0;
+            let isSwiping = false;
+            let isVerticalScroll = false;
             
             element.addEventListener('touchstart', (e) => {
                 startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                currentX = startX;
                 isSwiping = true;
+                isVerticalScroll = false;
                 element.style.transition = 'none';
             }, {passive: true});
             
             element.addEventListener('touchmove', (e) => {
                 if (!isSwiping) return;
                 currentX = e.touches[0].clientX;
+                let currentY = e.touches[0].clientY;
                 let deltaX = currentX - startX;
+                let deltaY = currentY - startY;
+                
+                if (!isVerticalScroll && Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 10) {
+                    isVerticalScroll = true;
+                    element.style.transform = `translateX(0px)`;
+                    return;
+                }
+
+                if (isVerticalScroll) return;
+
                 const isRTL = currentLang === 'ar';
                 
                 if (isRTL && deltaX > 0) deltaX = 0; 
                 if (!isRTL && deltaX < 0) deltaX = 0; 
                 
-                if (Math.abs(deltaX) > 60) deltaX = Math.sign(deltaX) * (60 + (Math.abs(deltaX) - 60) * 0.2); 
-                element.style.transform = `translateX(${deltaX}px)`;
+                if (Math.abs(deltaX) > 60) {
+                    deltaX = Math.sign(deltaX) * (60 + (Math.abs(deltaX) - 60) * 0.15);
+                }
+                
+                if (Math.abs(deltaX) > 5) {
+                    element.style.transform = `translateX(${deltaX}px)`;
+                }
             }, {passive: true});
             
             element.addEventListener('touchend', (e) => {
@@ -758,6 +779,8 @@
                 element.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
                 element.style.transform = `translateX(0px)`;
                 
+                if (isVerticalScroll) return;
+
                 let deltaX = currentX - startX;
                 if (Math.abs(deltaX) > 50) { 
                     window.setReply(snapshotKey, sender, text);
