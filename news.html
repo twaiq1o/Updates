@@ -349,13 +349,8 @@
 
         let currentLang = 'en';
         try {
-            let savedLang = localStorage.getItem('ninjaNewsLangV2');
-            if (savedLang) {
-                currentLang = savedLang;
-            } else {
-                let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-                currentLang = sysLang.startsWith('ar') ? 'ar' : 'en';
-            }
+            let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+            currentLang = sysLang.startsWith('ar') ? 'ar' : 'en';
         } catch (e) {
             currentLang = 'en';
         }
