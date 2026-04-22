@@ -15,17 +15,13 @@
         body { 
             background-color: transparent; 
             margin: 0; padding: 0;
-            min-height: 580px; 
             width: 100vw;
-            overflow: hidden;
         }
 
         .chat-card {
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
             width: calc(100% - 32px); max-width: 360px; 
             height: 570px; 
-            max-height: calc(100vh - 32px);
-            max-height: calc(var(--vh, 100vh) - 32px);
             position: fixed;
             top: 0; bottom: 0; left: 0; right: 0;
             margin: auto;
@@ -455,7 +451,6 @@
             window.translateMsg = async function(btn, text, container) {
             const contentSpan = container.querySelector('.actual-content');
             
-            
             if (btn.dataset.translated === 'true') {
                 contentSpan.innerHTML = escapeHTML(text);
                 btn.dataset.translated = 'false';
@@ -501,6 +496,20 @@
         }
         window.addEventListener('resize', setRealVh);
         setRealVh();
+
+        const chatInputs = document.querySelectorAll('#userName, #msgText');
+        chatInputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                const card = document.getElementById('chatCard');
+                if(card) card.style.maxHeight = 'calc(var(--vh, 100vh) - 32px)';
+            });
+            input.addEventListener('blur', () => {
+                setTimeout(() => {
+                    const card = document.getElementById('chatCard');
+                    if(card) card.style.maxHeight = 'none';
+                }, 150);
+            });
+        });
 
         let serverOffset = 0;
         const offsetRef = ref(db, ".info/serverTimeOffset");
