@@ -9,13 +9,10 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&family=Tajawal:wght@400;500;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;outline:0}
-::selection{background:#7d6b52;color:#fff}
-html{background-color:#efe9df!important;overflow-x:hidden;scroll-behavior:smooth}
 body{font-family:'Tajawal',system-ui,sans-serif;background-color:#efe9df;margin:0;padding:16px;display:flex;justify-content:center;align-items:center;min-height:100vh;-webkit-user-select:none;user-select:none}
 .card{background:#fff;border:1px solid #e4ddd4;border-radius:32px;padding:35px 25px 25px;width:100%;max-width:360px;box-shadow:0 15px 35px rgba(125,107,82,.08);position:relative;z-index:10}
 .lang-toggle{position:absolute;top:20px;left:20px;background:#fff;border:1px solid #f0ece4;color:#1d1b20;padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,.04);transition:transform .2s;direction:ltr;z-index:20}
 .lang-toggle:active{transform:scale(.95)}
-#globeIcon{color:#7d6b52;transition:transform .6s ease}
 .u-title-clean{font-size:19px;font-weight:800;color:#1d1b20;margin-bottom:4px;letter-spacing:-.5px}
 .u-sub-clean{font-size:11.5px;color:#7d6b52;font-weight:600;line-height:1.5}
 .update-box-wrap{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;padding:0 5px;margin-top:35px}
@@ -150,12 +147,15 @@ const CONFIG = {
         ]
     }
 };
+
 let currentLang = 'ar';
 let updateState = 0;
+
 const texts = {
     ar: { dir: 'rtl', langT: 'English', uTitle: 'تحديث جديد متوفر', uSub: 'لضمان أفضل أداء يرجى التحديث', uWhatsNew: 'أبرز التحسينات', uVerLabel: 'الإصدار', uProgLabel: 'تحميل', uBtnDl: 'تحديث الآن', uInst: 'تثبيت الآن', uInstState: 'جاري التجهيز...', uInstReady: 'جاهز للتثبيت', uManDlPrefix: 'هل تواجه مشكلة؟', uManDlLink: 'حمل يدوياً' },
     en: { dir: 'ltr', langT: 'العربية', uTitle: 'New Update Available', uSub: 'Please update for best performance', uWhatsNew: 'Key Improvements', uVerLabel: 'Version', uProgLabel: 'Downloading', uBtnDl: 'Update Now', uInst: 'Install Now', uInstState: 'Processing...', uInstReady: 'Ready to Install', uManDlPrefix: 'Having issues?', uManDlLink: 'Download manually' }
 };
+
 function updateUI() {
     const t = texts[currentLang];
     document.documentElement.lang = currentLang;
@@ -183,19 +183,23 @@ function updateUI() {
         clList.appendChild(li);
     });
 }
+
 function toggleLang() {
     currentLang = currentLang === 'ar' ? 'en' : 'ar';
     let g = document.getElementById('globeIcon');
     g.style.transform = g.style.transform === 'rotate(360deg)' ? 'rotate(0deg)' : 'rotate(360deg)';
     updateUI();
 }
+
 window.onload = () => {
     document.getElementById('trackerValueUI').innerText = CONFIG.requiredVersion.toFixed(1);
     updateUI();
 };
+
 function manualDownloadLink() {
     window.location.href = CONFIG.downloadLink;
 }
+
 function executeInstall() {
     const apkFileName = "v" + CONFIG.requiredVersion.toFixed(1) + ".apk";
     try {
@@ -209,6 +213,7 @@ function executeInstall() {
         window.location.href = CONFIG.downloadLink;
     }
 }
+
 function startUpdateProcess() {
     if (updateState === 1) return;
     if (updateState === 2) {
@@ -223,23 +228,28 @@ function startUpdateProcess() {
     const trackerLabelUI = document.getElementById('trackerLabelUI');
     const radar = document.getElementById('radarPro');
     const trackerContainer = document.getElementById('trackerContainer');
+    
     radar.classList.add('active');
     trackerContainer.classList.add('download-active');
     btn.classList.add('btn-hidden');
     if(manualWrap) manualWrap.classList.add('btn-hidden');
+    
     trackerLabelUI.innerText = texts[currentLang].uProgLabel;
     trackerValUI.innerText = "0%";
     const circumference = 377;
+    
     try {
         let dlTitle = currentLang === 'ar' ? "تحديث " + CONFIG.requiredVersion.toFixed(1) : "Update " + CONFIG.requiredVersion.toFixed(1);
         let dlDesc = currentLang === 'ar' ? "جاري التحميل..." : "Downloading...";
         const apkFileName = "v" + CONFIG.requiredVersion.toFixed(1) + ".apk";
+        
         if (typeof AP !== "undefined") {
             AP.startRealDownload(CONFIG.downloadLink, dlTitle, dlDesc, apkFileName);
         } else {
             window.location.href = CONFIG.downloadLink;
             return;
         }
+        
         let checkProgress = setInterval(() => {
             let prog = AP.getDownloadProgress();
             if (prog >= 100) {
