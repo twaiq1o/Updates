@@ -12,15 +12,21 @@
         
         input, textarea, .message .text, .actual-content { -webkit-user-select: text; user-select: text; }
 
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
         body { 
             background-color: transparent !important; 
-            margin: 0;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            padding: 16px;
+            box-sizing: border-box;
         }
 
         .chat-card {
@@ -28,8 +34,8 @@
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
             width: 100%; max-width: 360px; 
             height: 650px; 
-            margin: 16px;
-            max-height: calc(100% - 32px);
+            max-height: 100%;
+            margin: 0 auto;
             opacity: 0;
             display: flex; flex-direction: column;
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
@@ -493,26 +499,10 @@
 
         get(chatRef).then(hideLoader).catch(hideLoader);
 
-        function handleResize() {
+        window.addEventListener('resize', () => {
             setTimeout(() => {
                 if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
             }, 100);
-        }
-
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', handleResize);
-        }
-        window.addEventListener('resize', handleResize);
-        handleResize();
-
-        const inputs = document.querySelectorAll('input, textarea');
-        inputs.forEach(input => {
-            input.addEventListener('focus', () => {
-                setTimeout(() => {
-                    window.scrollTo(0, 0);
-                    if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
-                }, 100);
-            });
         });
 
         let serverOffset = 0;
