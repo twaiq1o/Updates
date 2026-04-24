@@ -18,15 +18,17 @@
             margin: 0;
             display: flex;
             justify-content: center;
-            overflow: hidden;
+            align-items: flex-start;
+            overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior-y: none;
         }
 
         .chat-card {
             position: relative;
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
             width: 100%; max-width: 360px; 
-            height: 650px !important; 
-            flex-shrink: 0 !important; 
+            height: 650px; 
             margin: 0 auto;
             opacity: 0;
             display: flex; flex-direction: column;
@@ -582,22 +584,21 @@
             }
         });
 
-        const resetScroll = () => {
+        function handleInputFocus() {
             setTimeout(() => {
-                window.scrollTo(0, 0);
-                document.body.scrollTop = 0;
-            }, 100);
-        };
-        
-        msgTextInput.addEventListener('blur', resetScroll);
-        userNameInput.addEventListener('blur', resetScroll);
-
-        const focusScroll = () => {
-            setTimeout(() => {
-                if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+                const card = document.getElementById('chatCard');
+                if(card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }
             }, 300);
-        };
-        
+        }
+
+        function handleInputBlur() {
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 100);
+        }
+
         msgTextInput.addEventListener('focus', () => {
             const name = userNameInput.value.trim();
             if (!name && !isAdminUser) {
@@ -605,8 +606,12 @@
                 showToast(LANG_DICT[currentLang].mustEnterName);
                 return;
             }
-            focusScroll();
+            handleInputFocus();
         });
+
+        msgTextInput.addEventListener('blur', handleInputBlur);
+        userNameInput.addEventListener('focus', handleInputFocus);
+        userNameInput.addEventListener('blur', handleInputBlur);
 
         function renderFailedMessage(name, text, replyToObj) {
             const msgDiv = document.createElement('div');
