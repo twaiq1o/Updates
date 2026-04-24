@@ -28,7 +28,8 @@
             position: relative;
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
             width: 100%; max-width: 360px; 
-            height: 650px; 
+            height: 100dvh; 
+            max-height: 650px;
             margin: 0 auto;
             opacity: 0;
             display: flex; flex-direction: column;
@@ -286,11 +287,6 @@
         }
         .message.mine .trans-btn-inline { color: rgba(255,255,255,0.8); }
         .trans-btn-inline:active { transform: scale(0.85); }
-        @media screen and (max-height: 750px) {
-    .chat-card {
-        height: 500px !important;
-    }
-        }
     </style>
 </head>
 <body>
