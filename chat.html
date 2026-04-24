@@ -18,9 +18,9 @@
             margin: 0;
             display: flex;
             justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            height: 100dvh;
+            align-items: flex-start;
+            overflow-y: auto;
+            overflow-x: hidden;
             overscroll-behavior-y: none;
         }
 
@@ -29,7 +29,6 @@
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
             width: 100%; max-width: 360px; 
             height: 650px; 
-            max-height: 100%;
             margin: 0 auto;
             opacity: 0;
             display: flex; flex-direction: column;
@@ -922,24 +921,6 @@
                 }[tag] || tag)
             );
             return escaped.replace(/\n/g, '<br>').replace(/\\n/g, '<br>');
-        }
-
-        if (window.visualViewport) {
-            function adjustForKeyboard() {
-                let vh = window.visualViewport.height;
-                document.body.style.height = vh + 'px';
-                let card = document.getElementById('chatCard');
-                if(card) {
-                    card.style.height = Math.min(vh - 32, 650) + 'px';
-                }
-                window.scrollTo(0, 0);
-                setTimeout(() => {
-                    let chatBox = document.getElementById('chatBox');
-                    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
-                }, 50);
-            }
-            window.visualViewport.addEventListener('resize', adjustForKeyboard);
-            adjustForKeyboard();
         }
     </script>
 </body>
