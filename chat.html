@@ -18,21 +18,23 @@
             margin: 0;
             display: flex;
             justify-content: center;
-            overflow: hidden;
+            align-items: flex-start;
+            overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior-y: none;
         }
 
         .chat-card {
             position: relative;
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
             width: 100%; max-width: 360px; 
-            height:100dvh;
-            max-height: 650px; 
+            height: 650px; 
             margin: 0 auto;
             opacity: 0;
             display: flex; flex-direction: column;
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             overflow: hidden;
-  l          animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @keyframes popIn {
@@ -284,6 +286,21 @@
         }
         .message.mine .trans-btn-inline { color: rgba(255,255,255,0.8); }
         .trans-btn-inline:active { transform: scale(0.85); }
+        const chatCardElement = document.getElementById('chatCard');
+const inputElements = document.querySelectorAll('#userName, #msgText');
+
+inputElements.forEach(input => {
+    // عند الضغط على الحقل وفتح الكيبورد
+    input.addEventListener('focus', () => {
+        chatCardElement.style.height = '500px';
+    });
+    
+    // عند إغلاق الكيبورد أو الخروج من الحقل
+    input.addEventListener('blur', () => {
+        chatCardElement.style.height = '650px';
+    });
+});
+        
     </style>
 </head>
 <body>
@@ -451,9 +468,8 @@
             if (container) container.classList.remove('active');
         };
 
-            window.translateMsg = async function(btn, text, container) {
+        window.translateMsg = async function(btn, text, container) {
             const contentSpan = container.querySelector('.actual-content');
-            
             
             if (btn.dataset.translated === 'true') {
                 contentSpan.innerHTML = escapeHTML(text);
@@ -485,21 +501,15 @@
             }
         };
 
-
         function hideLoader() {
             loaderOverlay.style.opacity = '0';
-            setTimeout(() => { loaderOverlay.style.visibility = 'hidden'; }, 300);
+            setTimeout(() => { 
+                loaderOverlay.style.visibility = 'hidden'; 
+                if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+            }, 300);
         }
 
         get(chatRef).then(hideLoader).catch(hideLoader);
-
-        function setRealVh() {
-            let vh = window.innerHeight;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-            setTimeout(() => { if(chatBox) chatBox.scrollTop = chatBox.scrollHeight; }, 100);
-        }
-        window.addEventListener('resize', setRealVh);
-        setRealVh();
 
         let serverOffset = 0;
         const offsetRef = ref(db, ".info/serverTimeOffset");
@@ -589,13 +599,34 @@
             }
         });
 
+        function handleInputFocus() {
+            setTimeout(() => {
+                const card = document.getElementById('chatCard');
+                if(card) {
+                    card.scrollIntoView({ behavior: 'auto', block: 'end' });
+                }
+            }, 300);
+        }
+
+        function handleInputBlur() {
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'auto' });
+            }, 100);
+        }
+
         msgTextInput.addEventListener('focus', () => {
             const name = userNameInput.value.trim();
             if (!name && !isAdminUser) {
                 msgTextInput.blur();
                 showToast(LANG_DICT[currentLang].mustEnterName);
+                return;
             }
+            handleInputFocus();
         });
+
+        msgTextInput.addEventListener('blur', handleInputBlur);
+        userNameInput.addEventListener('focus', handleInputFocus);
+        userNameInput.addEventListener('blur', handleInputBlur);
 
         function renderFailedMessage(name, text, replyToObj) {
             const msgDiv = document.createElement('div');
