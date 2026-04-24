@@ -28,7 +28,7 @@
             position: relative;
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
             width: 100%; max-width: 360px; 
-            height: 650px; 
+            height: 100dvh; 
             margin: 0 auto;
             opacity: 0;
             display: flex; flex-direction: column;
@@ -594,10 +594,16 @@
         }
 
         function handleInputBlur() {
-            setTimeout(() => {
-                window.scrollTo({ top: 0, behavior: 'auto' });
-            }, 100);
+    setTimeout(() => {
+        const activeElement = document.activeElement;
+        const isInputActive = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA';
+        
+        if (!isInputActive) {
+            window.scrollTo({ top: 0, behavior: 'auto' });
         }
+    }, 150);
+}
+
 
         msgTextInput.addEventListener('focus', () => {
             const name = userNameInput.value.trim();
