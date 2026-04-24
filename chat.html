@@ -18,7 +18,10 @@
             margin: 0;
             display: flex;
             justify-content: center;
+            height: 100vh;
             overflow: hidden;
+            position: fixed;
+            width: 100%;
         }
 
         .chat-card {
@@ -26,14 +29,13 @@
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
             width: 100%; max-width: 360px; 
             height: 650px; 
-            max-height: calc(var(--vh, 100vh) - 32px);
-            position: fixed;
             margin: 0 auto;
             opacity: 0;
             display: flex; flex-direction: column;
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             overflow: hidden;
             animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: height 0.1s ease-out;
         }
 
         @keyframes popIn {
@@ -360,6 +362,7 @@
         const chatRef = ref(db, 'global_messages');
         const userProfileRef = ref(db, 'chat_users/' + userId);
 
+        const chatCard = document.getElementById('chatCard');
         const chatBox = document.getElementById('chatBox');
         const userContainer = document.getElementById('userContainer');
         const userNameInput = document.getElementById('userName');
@@ -428,6 +431,21 @@
             document.getElementById('loaderText').innerText = d.loading;
         }
         applyLanguage();
+
+        if (window.visualViewport) {
+            const handleResize = () => {
+                const height = window.visualViewport.height;
+                const availableHeight = height - 32;
+                if (availableHeight < 650) {
+                    chatCard.style.height = availableHeight + 'px';
+                } else {
+                    chatCard.style.height = '650px';
+                }
+                chatBox.scrollTop = chatBox.scrollHeight;
+            };
+            window.visualViewport.addEventListener('resize', handleResize);
+            window.visualViewport.addEventListener('scroll', handleResize);
+        }
 
         function isDiffLang(text, sysLang) {
             if (!text) return false;
@@ -907,9 +925,6 @@
             );
             return escaped.replace(/\n/g, '<br>').replace(/\\n/g, '<br>');
         }
-    </script>
-</body>
-</html>
     </script>
 </body>
 </html>
