@@ -588,14 +588,14 @@
             setTimeout(() => {
                 const card = document.getElementById('chatCard');
                 if(card) {
-                    card.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    card.scrollIntoView({ behavior: 'auto', block: 'end' });
                 }
             }, 300);
         }
 
         function handleInputBlur() {
             setTimeout(() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.scrollTo({ top: 0, behavior: 'auto' });
             }, 100);
         }
 
