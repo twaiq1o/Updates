@@ -685,7 +685,12 @@
                 localStorage.setItem('twaiqNameLastEdit', nowTime.toString());
                 
                 if(userId !== 'default' && name) {
-                    set(userProfileRef, { name: name, lastEdit: nowTime }).catch(()=>{});
+                    set(userProfileRef, { 
+                    name: name, 
+                    lastEdit: nowTime, 
+                    owner: auth.currentUser.uid 
+                    }).catch(()=>{});
+
                 }
 
                 lockNameInput();
