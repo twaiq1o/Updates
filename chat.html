@@ -13,33 +13,30 @@
         input, textarea, .message .text, .actual-content { -webkit-user-select: text; user-select: text; }
 
         body { 
-            background-color: transparent !important; 
-            padding: 16px;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            overflow-y: auto;
-            overflow-x: hidden;
-            overscroll-behavior-y: none;
+            background-color: transparent; 
+            margin: 0; padding: 0;
+            min-height: 580px; 
+            width: 100vw;
+            overflow: hidden;
         }
 
         .chat-card {
-            position: relative;
             background: #fff; border: 1px solid #e4ddd4; border-radius: 32px;
-            width: 100%; max-width: 360px; 
+            width: calc(100% - 32px); max-width: 360px; 
             height: 100dvh; 
             max-height: 650px;
-            margin: 0 auto;
+            position: fixed;
+            top: 0; bottom: 0; left: 0; right: 0;
+            margin: auto;
             opacity: 0;
             display: flex; flex-direction: column;
             box-shadow: 0 15px 35px rgba(125,107,82,.15);
             overflow: hidden;
-            animation: popIn 0.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @keyframes popIn {
-            
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
@@ -454,8 +451,9 @@
             if (container) container.classList.remove('active');
         };
 
-        window.translateMsg = async function(btn, text, container) {
+            window.translateMsg = async function(btn, text, container) {
             const contentSpan = container.querySelector('.actual-content');
+            
             
             if (btn.dataset.translated === 'true') {
                 contentSpan.innerHTML = escapeHTML(text);
@@ -487,15 +485,21 @@
             }
         };
 
+
         function hideLoader() {
             loaderOverlay.style.opacity = '0';
-            setTimeout(() => { 
-                loaderOverlay.style.visibility = 'hidden'; 
-                if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
-            }, 300);
+            setTimeout(() => { loaderOverlay.style.visibility = 'hidden'; }, 300);
         }
 
         get(chatRef).then(hideLoader).catch(hideLoader);
+
+        function setRealVh() {
+            let vh = window.innerHeight;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+            setTimeout(() => { if(chatBox) chatBox.scrollTop = chatBox.scrollHeight; }, 100);
+        }
+        window.addEventListener('resize', setRealVh);
+        setRealVh();
 
         let serverOffset = 0;
         const offsetRef = ref(db, ".info/serverTimeOffset");
@@ -585,34 +589,13 @@
             }
         });
 
-        function handleInputFocus() {
-            setTimeout(() => {
-                const card = document.getElementById('chatCard');
-                if(card) {
-                    card.scrollIntoView({ behavior: 'auto', block: 'end' });
-                }
-            }, 300);
-        }
-
-        function handleInputBlur() {
-            setTimeout(() => {
-                window.scrollTo({ top: 0, behavior: 'auto' });
-            }, 100);
-        }
-
         msgTextInput.addEventListener('focus', () => {
             const name = userNameInput.value.trim();
             if (!name && !isAdminUser) {
                 msgTextInput.blur();
                 showToast(LANG_DICT[currentLang].mustEnterName);
-                return;
             }
-            handleInputFocus();
         });
-
-        msgTextInput.addEventListener('blur', handleInputBlur);
-        userNameInput.addEventListener('focus', handleInputFocus);
-        userNameInput.addEventListener('blur', handleInputBlur);
 
         function renderFailedMessage(name, text, replyToObj) {
             const msgDiv = document.createElement('div');
