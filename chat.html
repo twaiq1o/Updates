@@ -18,7 +18,10 @@
             margin: 0;
             display: flex;
             justify-content: center;
-            overflow: hidden;
+            align-items: flex-start;
+            overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior-y: none;
         }
 
         .chat-card {
@@ -581,23 +584,34 @@
             }
         });
 
+        function handleInputFocus() {
+            setTimeout(() => {
+                const card = document.getElementById('chatCard');
+                if(card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }
+            }, 300);
+        }
+
+        function handleInputBlur() {
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 100);
+        }
+
         msgTextInput.addEventListener('focus', () => {
             const name = userNameInput.value.trim();
             if (!name && !isAdminUser) {
                 msgTextInput.blur();
                 showToast(LANG_DICT[currentLang].mustEnterName);
+                return;
             }
+            handleInputFocus();
         });
 
-        const resetScroll = () => {
-            setTimeout(() => {
-                window.scrollTo(0, 0);
-                document.body.scrollTop = 0;
-            }, 100);
-        };
-        
-        msgTextInput.addEventListener('blur', resetScroll);
-        userNameInput.addEventListener('blur', resetScroll);
+        msgTextInput.addEventListener('blur', handleInputBlur);
+        userNameInput.addEventListener('focus', handleInputFocus);
+        userNameInput.addEventListener('blur', handleInputBlur);
 
         function renderFailedMessage(name, text, replyToObj) {
             const msgDiv = document.createElement('div');
