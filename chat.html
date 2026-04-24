@@ -286,21 +286,6 @@
         }
         .message.mine .trans-btn-inline { color: rgba(255,255,255,0.8); }
         .trans-btn-inline:active { transform: scale(0.85); }
-        const chatCardElement = document.getElementById('chatCard');
-const inputElements = document.querySelectorAll('#userName, #msgText');
-
-inputElements.forEach(input => {
-    // عند الضغط على الحقل وفتح الكيبورد
-    input.addEventListener('focus', () => {
-        chatCardElement.style.height = '500px';
-    });
-    
-    // عند إغلاق الكيبورد أو الخروج من الحقل
-    input.addEventListener('blur', () => {
-        chatCardElement.style.height = '650px';
-    });
-});
-        
     </style>
 </head>
 <body>
