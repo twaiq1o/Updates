@@ -108,15 +108,6 @@
             animation: slideInRight 0.5s cubic-bezier(0.2, 1, 0.3, 1) forwards; 
         }
 
-        .changelog-list li.special-news-item {
-            background: #fffdf9;
-            border: 1px solid rgba(184,147,90,0.4);
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 4px 12px rgba(184,147,90,0.06);
-            margin-bottom: 2px;
-        }
-
         html[dir="ltr"] .changelog-list li { transform: translateX(-10px); animation-name: slideInLeft; }
         .changelog-list li:nth-child(1) { animation-delay: 0.1s; }
         .changelog-list li:nth-child(2) { animation-delay: 0.2s; }
@@ -130,19 +121,9 @@
             color: #b8935a; font-size: 15px; margin-top: 2px; 
             animation: floatingIcon 3s ease-in-out infinite; 
         }
-        
-        .special-news-item .cl-icon {
-            font-size: 18px;
-            color: #b8935a;
-        }
 
         .cl-content { display: flex; flex-direction: column; width: 100%; }
         .cl-title { font-size: 11px; font-weight: 800; color: #1d1b20; margin-bottom: 4px; line-height: 1.4; }
-        
-        .special-news-item .cl-title {
-            color: #b8935a;
-        }
-
         .cl-desc { font-size: 10px; color: #4a453f; font-weight: 600; line-height: 1.6; }
 
         .like-container { 
@@ -208,11 +189,11 @@
             <div class="changelog-container">
                 <div class="changelog-title"><i class="fas fa-bolt"></i> <span id="uTitle">آخر الأخبار</span></div>
                 <ul class="changelog-list">
-                    <li class="special-news-item">
-                        <i class="fas fa-star cl-icon"></i>
+                    <li>
+                        <i class="fas fa-check-circle cl-icon"></i>
                         <div class="cl-content">
-                            <div class="cl-title" id="cTitSoon">قريباً: إطلاق الإصدار v13.9</div>
-                            <div class="cl-desc" id="cDesSoon">يتضمن الإصدار القادم تحسينات بصرية وشاملة لواجهة التطبيق، لضمان تجربة استخدام أكثر سلاسة واحترافية.</div>
+                            <div class="cl-title" id="cTitSoon">إطلاق الإصدار الجديد v13.9</div>
+                            <div class="cl-desc" id="cDesSoon">تم إطلاق الإصدار 13.9 بنجاح! يتضمن هذا التحديث تحسينات بصرية وشاملة لواجهة التطبيق، لضمان تجربة استخدام أكثر سلاسة واحترافية.</div>
                             <div class="like-container" id="like-news5" onclick="window.toggleLike('news5')">
                                 <i class="far fa-heart" id="icon-news5"></i>
                                 <span class="like-count" id="count-news5">0</span>
@@ -315,8 +296,8 @@
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
                 upTitle: 'آخر الأخبار',
                 btn: 'حسناً',
-                cTitSoon: 'قريباً: إطلاق الإصدار v13.9',
-                cDesSoon: 'يتضمن الإصدار القادم تحسينات بصرية وشاملة لواجهة التطبيق، لضمان تجربة استخدام أكثر سلاسة واحترافية.',
+                cTitSoon: 'إطلاق الإصدار الجديد v13.9',
+                cDesSoon: 'تم إطلاق الإصدار 13.9 بنجاح! يتضمن هذا التحديث تحسينات بصرية وشاملة لواجهة التطبيق، لضمان تجربة استخدام أكثر سلاسة واحترافية.',
                 cTitChat: 'إطلاق الإصدار الجديد v13.8',
                 cDesChat: 'تم إطلاق الإصدار 13.8.. يتضمن هذا التحديث ميزة المحادثة الجماعية التي تتيح لك التواصل المباشر مع جميع المشتركين، بالإضافة إلى تحسينات عامة للأداء.',
                 cTitNew: 'تجربة أسرع وأكثر سلاسة',
@@ -329,8 +310,8 @@
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
                 upTitle: 'Latest News',
                 btn: 'OK',
-                cTitSoon: 'Coming Soon: Version v13.9',
-                cDesSoon: 'The upcoming version includes comprehensive and visual improvements to the app, ensuring a smoother and more professional user experience.',
+                cTitSoon: 'Version v13.9 Released',
+                cDesSoon: 'Version 13.9 has been officially released! This update includes comprehensive and visual improvements to the app, ensuring a smoother and more professional user experience.',
                 cTitChat: 'Version v13.8 Released',
                 cDesChat: 'Version 13.8 has been officially released! This update includes the group chat feature, allowing you to communicate directly with all subscribers, along with general performance improvements.',
                 cTitNew: 'Faster & Smoother Experience',
