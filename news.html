@@ -252,6 +252,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
         import { getDatabase, ref, onValue, runTransaction, goOffline, goOnline, set } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js"; 
 
         const firebaseConfig = {
             apiKey: "AIzaSyDuWatMSvdlLcHyqkiDvu6KLyRUOf0GCUg",
@@ -266,6 +268,9 @@
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
+        /* تفعيل وتسجيل الدخول الصامت للسماح بضغط زر اللايك */
+        const auth = getAuth(app);
+        signInAnonymously(auth).catch((error) => console.error("Auth error:", error));
 
         function killConnection() {
             try { goOffline(database); } catch(e) {}
