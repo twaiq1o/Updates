@@ -108,11 +108,21 @@
             animation: slideInRight 0.5s cubic-bezier(0.2, 1, 0.3, 1) forwards; 
         }
 
+        .changelog-list li.highlight-item {
+            background: #fff;
+            border: 1px solid rgba(184, 147, 90, 0.3);
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(184, 147, 90, 0.08);
+            margin-bottom: 5px;
+        }
+
         html[dir="ltr"] .changelog-list li { transform: translateX(-10px); animation-name: slideInLeft; }
         .changelog-list li:nth-child(1) { animation-delay: 0.1s; }
         .changelog-list li:nth-child(2) { animation-delay: 0.2s; }
         .changelog-list li:nth-child(3) { animation-delay: 0.3s; }
         .changelog-list li:nth-child(4) { animation-delay: 0.4s; }
+        .changelog-list li:nth-child(5) { animation-delay: 0.5s; }
 
         @keyframes slideInRight { to { opacity: 1; transform: translateX(0); } }
         @keyframes slideInLeft { to { opacity: 1; transform: translateX(0); } }
@@ -120,6 +130,16 @@
         .cl-icon { 
             color: #b8935a; font-size: 15px; margin-top: 2px; 
             animation: floatingIcon 3s ease-in-out infinite; 
+        }
+
+        .highlight-item .cl-icon {
+            animation: pulseStar 2s infinite;
+        }
+
+        @keyframes pulseStar {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); filter: drop-shadow(0 0 4px rgba(184,147,90,.5)); }
+            100% { transform: scale(1); }
         }
 
         .cl-content { display: flex; flex-direction: column; width: 100%; }
@@ -189,6 +209,17 @@
             <div class="changelog-container">
                 <div class="changelog-title"><i class="fas fa-bolt"></i> <span id="uTitle">آخر الأخبار</span></div>
                 <ul class="changelog-list">
+                    <li class="highlight-item">
+                        <i class="fas fa-star cl-icon"></i>
+                        <div class="cl-content">
+                            <div class="cl-title" id="cTitV14">قريباً: الإصدار 14.0</div>
+                            <div class="cl-desc" id="cDesV14">يتضمن التحديث القادم تحسينات شاملة لتصميم لوحة التحكم، بالإضافة إلى تحسين استقرار وأداء نظام تغيير الموقع بشكل عام.</div>
+                            <div class="like-container" id="like-news6" onclick="window.toggleLike('news6')">
+                                <i class="far fa-heart" id="icon-news6"></i>
+                                <span class="like-count" id="count-news6">0</span>
+                            </div>
+                        </div>
+                    </li>
                     <li>
                         <i class="fas fa-check-circle cl-icon"></i>
                         <div class="cl-content">
@@ -296,6 +327,8 @@
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
                 upTitle: 'آخر الأخبار',
                 btn: 'حسناً',
+                cTitV14: 'قريباً: الإصدار 14.0',
+                cDesV14: 'يتضمن التحديث القادم تحسينات شاملة لتصميم لوحة التحكم، بالإضافة إلى تحسين استقرار وأداء نظام تغيير الموقع بشكل عام.',
                 cTitSoon: 'إطلاق الإصدار الجديد v13.9',
                 cDesSoon: 'تم إطلاق الإصدار 13.9 بنجاح! يتضمن هذا التحديث تحسينات بصرية وشاملة لواجهة التطبيق، لضمان تجربة استخدام أكثر سلاسة واحترافية.',
                 cTitChat: 'إطلاق الإصدار الجديد v13.8',
@@ -310,6 +343,8 @@
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
                 upTitle: 'Latest News',
                 btn: 'OK',
+                cTitV14: 'Coming Soon: Version 14.0',
+                cDesV14: 'The upcoming update features comprehensive design improvements to the control panel, along with enhanced stability and performance for the location changing system.',
                 cTitSoon: 'Version v13.9 Released',
                 cDesSoon: 'Version 13.9 has been officially released! This update includes comprehensive and visual improvements to the app, ensuring a smoother and more professional user experience.',
                 cTitChat: 'Version v13.8 Released',
@@ -367,6 +402,8 @@
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
+            document.getElementById('cTitV14').innerText = d.cTitV14;
+            document.getElementById('cDesV14').innerText = d.cDesV14;
             document.getElementById('cTitSoon').innerText = d.cTitSoon;
             document.getElementById('cDesSoon').innerText = d.cDesSoon;
             document.getElementById('cTitChat').innerText = d.cTitChat;
@@ -404,9 +441,10 @@
                 document.getElementById('count-news2').innerText = data.news2 || 0;
                 document.getElementById('count-news4').innerText = data.news4 || 0;
                 document.getElementById('count-news5').innerText = data.news5 || 0;
+                document.getElementById('count-news6').innerText = data.news6 || 0;
             });
 
-            ['news1', 'news2', 'news4', 'news5'].forEach(newsId => {
+            ['news1', 'news2', 'news4', 'news5', 'news6'].forEach(newsId => {
                 let isLiked = getState('liked_' + newsId) === 'true' || memoryLikes[newsId] === true;
                 if (isLiked) {
                     let container = document.getElementById('like-' + newsId);
