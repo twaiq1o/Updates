@@ -594,16 +594,15 @@
         }
 
         function handleInputBlur() {
-    setTimeout(() => {
-        const activeElement = document.activeElement;
-        const isInputActive = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA';
-        
-        if (!isInputActive) {
-            window.scrollTo({ top: 0, behavior: 'auto' });
+            setTimeout(() => {
+                const activeElement = document.activeElement;
+                const isInputActive = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA';
+                
+                if (!isInputActive) {
+                    window.scrollTo({ top: 0, behavior: 'auto' });
+                }
+            }, 150);
         }
-    }, 150);
-}
-
 
         msgTextInput.addEventListener('focus', () => {
             const name = userNameInput.value.trim();
@@ -674,7 +673,7 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        function executeSend(name, text) {
+        async function executeSend(name, text) {
             const replyPayload = window.currentReplyTo;
             
             if (!navigator.onLine) {
@@ -686,17 +685,22 @@
             window.cancelReply();
             const nowTime = getTrueServerTime();
 
-            if (!userNameInput.readOnly && (name || isAdminUser)) {
-                localStorage.setItem('twaiqChatName', name);
+            let finalName = name; // لا نقوم بفرض أي اسم افتراضي هنا
+
+            // إذا كان آدمن، نسمح له بالاسم الفارغ ولا نجبره على التسجيل
+            if (!userNameInput.readOnly && (finalName !== '' || isAdminUser)) {
+                localStorage.setItem('twaiqChatName', finalName);
                 localStorage.setItem('twaiqNameLastEdit', nowTime.toString());
                 
-                if(userId !== 'default' && name) {
-                    set(userProfileRef, { 
-                    name: name, 
-                    lastEdit: nowTime, 
-                    owner: auth.currentUser.uid 
-                    }).catch(()=>{});
-
+                // لا نحفظ الاسم في قاعدة البيانات إذا كان فارغاً (تجنباً لرفض السيرفر)
+                if(userId !== 'default' && finalName !== '') {
+                    try {
+                        await set(userProfileRef, { 
+                            name: finalName, 
+                            lastEdit: nowTime, 
+                            owner: auth.currentUser.uid 
+                        });
+                    } catch(e) {}
                 }
 
                 lockNameInput();
@@ -710,7 +714,7 @@
 
             const payload = {
                 uid: userId,
-                sender: name,
+                sender: finalName, // سيكون فارغاً في حالة الآدمن إذا لم يكتب اسماً
                 text: text,
                 timestamp: serverTimestamp()
             };
@@ -730,7 +734,7 @@
                     isConfirmed = true;
                     pendingMessages.delete(msgKey);
                     set(newMsgRef, null).catch(()=>{});
-                    renderFailedMessage(name, text, replyPayload);
+                    renderFailedMessage(finalName, text, replyPayload);
                 }
             });
 
@@ -739,7 +743,7 @@
                     isConfirmed = true;
                     pendingMessages.delete(msgKey);
                     set(newMsgRef, null).catch(()=>{});
-                    renderFailedMessage(name, text, replyPayload);
+                    renderFailedMessage(finalName, text, replyPayload);
                 }
             }, 7000); 
         }
@@ -859,6 +863,7 @@
             if (showName) {
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'sender-name';
+                // إذا كان النص فارغاً (كما تريد للآدمن)، سيعرض البادج فقط
                 nameDiv.innerHTML = `${senderText} ${badgeHtml}`;
                 msgDiv.appendChild(nameDiv);
             }
