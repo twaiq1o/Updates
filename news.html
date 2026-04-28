@@ -294,7 +294,7 @@
         const database = getDatabase(app);
         
         const auth = getAuth(app);
-        signInAnonymously(auth).catch((error) => console.error("Auth error:", error));
+        signInAnonymously(auth).catch((e) => {});
 
         function killConnection() {
             try { goOffline(database); } catch(e) {}
@@ -314,12 +314,30 @@
 
         window.addEventListener('pagehide', killConnection);
         window.addEventListener('unload', killConnection);
-
         document.addEventListener('contextmenu', e => e.preventDefault());
+        
         document.getElementById('closeBtn').addEventListener('click', function() {
             killConnection();
             window.location.href = "ninja://close";
         });
+
+        function generateFingerprint() {
+            let str = navigator.userAgent + screen.width + 'x' + screen.height + navigator.language + new Date().getTimezoneOffset();
+            try {
+                let canvas = document.createElement('canvas');
+                let ctx = canvas.getContext('2d');
+                ctx.fillText("ninja", 2, 2);
+                str += canvas.toDataURL();
+            } catch(e) {}
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return 'user_' + Math.abs(hash).toString(36);
+        }
+
+        const deviceId = generateFingerprint();
 
         const LANG_DICT = {
             ar: {
@@ -357,34 +375,8 @@
         };
 
         let memoryLikes = {};
-
-        function saveState(key, value) {
-            try { localStorage.setItem(key, value); } catch(e) {}
-            try {
-                let d = new Date(); d.setTime(d.getTime() + (365*24*60*60*1000));
-                document.cookie = key + "=" + value + ";expires=" + d.toUTCString() + ";path=/";
-            } catch(e) {}
-        }
-
-        function removeState(key) {
-            try { localStorage.removeItem(key); } catch(e) {}
-            try { document.cookie = key + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;"; } catch(e) {}
-        }
-
-        function getState(key) {
-            try { let v = localStorage.getItem(key); if(v) return v; } catch(e) {}
-            try {
-                let name = key + "=";
-                let ca = document.cookie.split(';');
-                for(let i=0; i<ca.length; i++) {
-                    let c = ca[i].trim();
-                    if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
-                }
-            } catch(e) {}
-            return null;
-        }
-
         let currentLang = 'en';
+        
         try {
             let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
             currentLang = sysLang.startsWith('ar') ? 'ar' : 'en';
@@ -414,9 +406,11 @@
             document.getElementById('cDesOld').innerText = d.cDesOld;
         }
 
+        applyLanguage();
+
         document.getElementById('langBtn').addEventListener('click', function() {
             currentLang = LANG_DICT[currentLang].opp;
-            saveState('ninjaNewsLangV2', currentLang);
+            set(ref(database, 'user_prefs/' + deviceId + '/lang'), currentLang);
             
             let globe = document.getElementById('globeIcon');
             globe.style.transform = globe.style.transform === 'rotate(360deg)' ? 'rotate(0deg)' : 'rotate(360deg)';
@@ -430,11 +424,8 @@
             }, 300);
         });
 
-        applyLanguage();
-
-        function fetchInitialLikes() {
+        function fetchInitialData() {
             const likesRef = ref(database, 'news_likes');
-            
             onValue(likesRef, (snapshot) => {
                 const data = snapshot.val() || {};
                 document.getElementById('count-news1').innerText = data.news1 || 0;
@@ -444,28 +435,45 @@
                 document.getElementById('count-news6').innerText = data.news6 || 0;
             });
 
-            ['news1', 'news2', 'news4', 'news5', 'news6'].forEach(newsId => {
-                let isLiked = getState('liked_' + newsId) === 'true' || memoryLikes[newsId] === true;
-                if (isLiked) {
+            const userPrefsRef = ref(database, 'user_prefs/' + deviceId);
+            let firstLoad = true;
+            onValue(userPrefsRef, (snapshot) => {
+                const data = snapshot.val() || {};
+                
+                if (firstLoad && data.lang && data.lang !== currentLang) {
+                    currentLang = data.lang;
+                    applyLanguage();
+                }
+                firstLoad = false;
+
+                memoryLikes = data.likes || {};
+                ['news1', 'news2', 'news4', 'news5', 'news6'].forEach(newsId => {
                     let container = document.getElementById('like-' + newsId);
                     let icon = document.getElementById('icon-' + newsId);
-                    container.classList.add('liked');
-                    icon.classList.remove('far');
-                    icon.classList.add('fas');
-                }
+                    if (memoryLikes[newsId]) {
+                        container.classList.add('liked');
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    } else {
+                        container.classList.remove('liked');
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    }
+                });
             });
         }
 
         window.toggleLike = function(newsId) {
-            let isLiked = getState('liked_' + newsId) === 'true' || memoryLikes[newsId] === true;
+            let isLiked = memoryLikes[newsId] === true;
             const newsRef = ref(database, 'news_likes/' + newsId);
+            const userLikeRef = ref(database, 'user_prefs/' + deviceId + '/likes/' + newsId);
             
             let container = document.getElementById('like-' + newsId);
             let icon = document.getElementById('icon-' + newsId);
 
             if (isLiked) {
                 runTransaction(newsRef, (currentLikes) => (currentLikes || 1) - 1);
-                removeState('liked_' + newsId);
+                set(userLikeRef, null);
                 memoryLikes[newsId] = false;
 
                 container.classList.remove('liked');
@@ -473,7 +481,7 @@
                 icon.classList.add('far');
             } else {
                 runTransaction(newsRef, (currentLikes) => (currentLikes || 0) + 1);
-                saveState('liked_' + newsId, 'true');
+                set(userLikeRef, true);
                 memoryLikes[newsId] = true;
 
                 container.classList.add('liked');
@@ -482,7 +490,7 @@
             }
         };
 
-        fetchInitialLikes();
+        fetchInitialData();
     </script>
 </body>
 </html>
