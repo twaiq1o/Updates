@@ -275,8 +275,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getDatabase, ref, onValue, runTransaction, goOffline, goOnline, set } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
-        
+        import { getDatabase, ref, onValue, runTransaction, goOffline, goOnline, set, remove } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js"; 
 
         const firebaseConfig = {
@@ -294,57 +293,57 @@
         const database = getDatabase(app);
         
         const auth = getAuth(app);
-        signInAnonymously(auth).catch((e) => {});
+        signInAnonymously(auth).catch(() => {});
 
-        function killConnection() {
-            try { goOffline(database); } catch(e) {}
-        }
-
-        function restoreConnection() {
-            try { goOnline(database); } catch(e) {}
-        }
+        function killConnection() { try { goOffline(database); } catch(e) {} }
+        function restoreConnection() { try { goOnline(database); } catch(e) {} }
 
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                killConnection();
-            } else {
-                restoreConnection();
-            }
+            if (document.visibilityState === 'hidden') killConnection();
+            else restoreConnection();
         });
 
         window.addEventListener('pagehide', killConnection);
         window.addEventListener('unload', killConnection);
         document.addEventListener('contextmenu', e => e.preventDefault());
-        
         document.getElementById('closeBtn').addEventListener('click', function() {
             killConnection();
             window.location.href = "ninja://close";
         });
 
-        function generateFingerprint() {
-            let str = navigator.userAgent + screen.width + 'x' + screen.height + navigator.language + new Date().getTimezoneOffset();
-            try {
-                let canvas = document.createElement('canvas');
-                let ctx = canvas.getContext('2d');
-                ctx.fillText("ninja", 2, 2);
-                str += canvas.toDataURL();
-            } catch(e) {}
+        function getFirebaseDeviceId() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('driverId')) return params.get('driverId');
+            
+            let str = navigator.userAgent + (window.screen ? (screen.width + 'x' + screen.height) : '') + (navigator.hardwareConcurrency || '') + (navigator.deviceMemory || '');
             let hash = 0;
             for (let i = 0; i < str.length; i++) {
-                hash = ((hash << 5) - hash) + str.charCodeAt(i);
-                hash |= 0;
+                let char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
             }
-            return 'user_' + Math.abs(hash).toString(36);
+            return 'dev_' + Math.abs(hash).toString(16);
         }
 
-        const deviceId = generateFingerprint();
+        const deviceId = getFirebaseDeviceId();
+        let memoryLikes = {};
+
+        async function saveStateAsync(key, value) {
+            try { localStorage.setItem(key, value); } catch(e) {}
+            try { if ('caches' in window) { const cache = await caches.open('ninja-cache'); await cache.put('/' + key, new Response(value)); } } catch(e) {}
+        }
+
+        async function getStateAsync(key) {
+            try { let v = localStorage.getItem(key); if(v) return v; } catch(e) {}
+            try { if ('caches' in window) { const cache = await caches.open('ninja-cache'); const res = await cache.match('/' + key); if (res) return await res.text(); } } catch(e) {}
+            return null;
+        }
 
         const LANG_DICT = {
             ar: {
                 dir: 'rtl', opp: 'en', langT: 'English', tgBtn: 'قناة التلقرام',
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
-                upTitle: 'آخر الأخبار',
-                btn: 'حسناً',
+                upTitle: 'آخر الأخبار', btn: 'حسناً',
                 cTitV14: 'إطلاق الإصدار الجديد v14.1',
                 cDesV14: 'تم إطلاق الإصدار 14.1 بنجاح! يتضمن التحديث تحسينات في تصميم لوحة التحكم، وتعديلات على نظام الموقع الوهمي لضمان استقرار وأداء أفضل، بالإضافة إلى تحسينات بصرية وشاملة على التطبيق.',
                 cTitSoon: 'إطلاق الإصدار الجديد v13.9',
@@ -359,8 +358,7 @@
             en: {
                 dir: 'ltr', opp: 'ar', langT: 'العربية', tgBtn: 'Telegram Channel',
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
-                upTitle: 'Latest News',
-                btn: 'OK',
+                upTitle: 'Latest News', btn: 'OK',
                 cTitV14: 'Version v14.1 Released',
                 cDesV14: 'Version 14.1 has been successfully released! This update includes improvements to the control panel design, adjustments to the mock location system for better stability and performance, along with comprehensive visual enhancements to the app.',
                 cTitSoon: 'Version v13.9 Released',
@@ -374,15 +372,11 @@
             }
         };
 
-        let memoryLikes = {};
         let currentLang = 'en';
-        
         try {
             let sysLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
             currentLang = sysLang.startsWith('ar') ? 'ar' : 'en';
-        } catch (e) {
-            currentLang = 'en';
-        }
+        } catch (e) {}
 
         function applyLanguage() {
             const d = LANG_DICT[currentLang];
@@ -408,9 +402,16 @@
 
         applyLanguage();
 
+        getStateAsync('ninjaNewsLangV2').then(lang => {
+            if(lang && (lang === 'ar' || lang === 'en')) {
+                currentLang = lang;
+                applyLanguage();
+            }
+        });
+
         document.getElementById('langBtn').addEventListener('click', function() {
             currentLang = LANG_DICT[currentLang].opp;
-            set(ref(database, 'user_prefs/' + deviceId + '/lang'), currentLang);
+            saveStateAsync('ninjaNewsLangV2', currentLang);
             
             let globe = document.getElementById('globeIcon');
             globe.style.transform = globe.style.transform === 'rotate(360deg)' ? 'rotate(0deg)' : 'rotate(360deg)';
@@ -424,7 +425,7 @@
             }, 300);
         });
 
-        function fetchInitialData() {
+        function fetchInitialLikes() {
             const likesRef = ref(database, 'news_likes');
             onValue(likesRef, (snapshot) => {
                 const data = snapshot.val() || {};
@@ -435,45 +436,35 @@
                 document.getElementById('count-news6').innerText = data.news6 || 0;
             });
 
-            const userPrefsRef = ref(database, 'user_prefs/' + deviceId);
-            let firstLoad = true;
-            onValue(userPrefsRef, (snapshot) => {
+            const userLikesRef = ref(database, 'drivers/' + deviceId + '/liked_news');
+            onValue(userLikesRef, (snapshot) => {
                 const data = snapshot.val() || {};
-                
-                if (firstLoad && data.lang && data.lang !== currentLang) {
-                    currentLang = data.lang;
-                    applyLanguage();
-                }
-                firstLoad = false;
-
-                memoryLikes = data.likes || {};
                 ['news1', 'news2', 'news4', 'news5', 'news6'].forEach(newsId => {
-                    let container = document.getElementById('like-' + newsId);
-                    let icon = document.getElementById('icon-' + newsId);
-                    if (memoryLikes[newsId]) {
-                        container.classList.add('liked');
-                        icon.classList.remove('far');
-                        icon.classList.add('fas');
-                    } else {
-                        container.classList.remove('liked');
-                        icon.classList.remove('fas');
-                        icon.classList.add('far');
+                    if (data[newsId] === true) {
+                        memoryLikes[newsId] = true;
+                        let container = document.getElementById('like-' + newsId);
+                        let icon = document.getElementById('icon-' + newsId);
+                        if (container && icon) {
+                            container.classList.add('liked');
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                        }
                     }
                 });
-            });
+            }, { onlyOnce: true });
         }
 
         window.toggleLike = function(newsId) {
             let isLiked = memoryLikes[newsId] === true;
             const newsRef = ref(database, 'news_likes/' + newsId);
-            const userLikeRef = ref(database, 'user_prefs/' + deviceId + '/likes/' + newsId);
+            const userLikeRef = ref(database, 'drivers/' + deviceId + '/liked_news/' + newsId);
             
             let container = document.getElementById('like-' + newsId);
             let icon = document.getElementById('icon-' + newsId);
 
             if (isLiked) {
                 runTransaction(newsRef, (currentLikes) => (currentLikes || 1) - 1);
-                set(userLikeRef, null);
+                remove(userLikeRef);
                 memoryLikes[newsId] = false;
 
                 container.classList.remove('liked');
@@ -490,7 +481,7 @@
             }
         };
 
-        fetchInitialData();
+        fetchInitialLikes();
     </script>
 </body>
 </html>
