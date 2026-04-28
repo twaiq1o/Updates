@@ -23,36 +23,41 @@
             justify-content: center;
         }
 
-        #loaderContainer {
+        .loader-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #fff;
+            background: #faf9f7;
             z-index: 9999;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
         }
 
-        .loader-spinner {
-            width: 45px;
-            height: 45px;
+        .loader-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
             border: 4px solid rgba(184, 147, 90, 0.15);
             border-top-color: #b8935a;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: spin 1s linear infinite;
             margin-bottom: 20px;
         }
 
-        #loaderText {
-            font-size: 14px;
+        .loader-text {
+            font-size: 15px;
             font-weight: 700;
-            color: #1d1b20;
-            letter-spacing: 0.5px;
+            color: #7d6b52;
+            letter-spacing: -0.3px;
             animation: pulseText 1.5s ease-in-out infinite;
         }
 
@@ -62,8 +67,8 @@
         }
 
         @keyframes pulseText {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0%, 100% { opacity: 0.5; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1); }
         }
 
         .card { 
@@ -229,9 +234,9 @@
 </head>
 <body>
 
-    <div id="loaderContainer">
-        <div class="loader-spinner"></div>
-        <span id="loaderText"></span>
+    <div id="loaderOverlay" class="loader-overlay">
+        <div class="spinner"></div>
+        <div id="loaderText" class="loader-text">جاري تحميل أحدث الأخبار...</div>
     </div>
 
     <div class="card">
@@ -375,6 +380,13 @@
 
         const deviceId = getFirebaseDeviceId();
         let memoryLikes = {};
+        let isLoaded = false;
+
+        function hideLoader() {
+            if (isLoaded) return;
+            isLoaded = true;
+            document.getElementById('loaderOverlay').classList.add('hidden');
+        }
 
         async function saveStateAsync(key, value) {
             try { localStorage.setItem(key, value); } catch(e) {}
@@ -390,7 +402,7 @@
         const LANG_DICT = {
             ar: {
                 dir: 'rtl', opp: 'en', langT: 'English', tgBtn: 'قناة التلقرام',
-                loadingText: 'جاري تحميل أحدث الأخبار...',
+                loadingTxt: 'جاري تحميل أحدث الأخبار...',
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
                 upTitle: 'آخر الأخبار', btn: 'حسناً',
                 cTitV14: 'إطلاق الإصدار الجديد v14.1',
@@ -406,7 +418,7 @@
             },
             en: {
                 dir: 'ltr', opp: 'ar', langT: 'العربية', tgBtn: 'Telegram Channel',
-                loadingText: 'Loading latest news...',
+                loadingTxt: 'Loading latest news...',
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
                 upTitle: 'Latest News', btn: 'OK',
                 cTitV14: 'Version v14.1 Released',
@@ -432,7 +444,7 @@
             const d = LANG_DICT[currentLang];
             document.documentElement.lang = currentLang;
             document.documentElement.dir = d.dir;
-            document.getElementById('loaderText').innerText = d.loadingText;
+            document.getElementById('loaderText').innerText = d.loadingTxt;
             document.getElementById('langText').innerText = d.langT;
             document.getElementById('tgText').innerText = d.tgBtn;
             document.getElementById('mTitle').innerText = d.title;
@@ -502,6 +514,8 @@
                         }
                     }
                 });
+                
+                setTimeout(hideLoader, 200);
             }, { onlyOnce: true });
         }
 
@@ -533,14 +547,8 @@
         };
 
         fetchInitialLikes();
+        setTimeout(hideLoader, 3500);
 
-        window.addEventListener('load', () => {
-            const loader = document.getElementById('loaderContainer');
-            setTimeout(() => {
-                loader.style.opacity = '0';
-                loader.style.visibility = 'hidden';
-            }, 500);
-        });
     </script>
 </body>
 </html>
