@@ -567,7 +567,7 @@
             }
         }
 
-        const COOLDOWN_MS = 60 * 60 * 1000; 
+        const COOLDOWN_MS = 2 * 60 * 60 * 1000; 
 
         userContainer.addEventListener('click', () => {
             if (!userNameInput.readOnly) return;
@@ -685,14 +685,12 @@
             window.cancelReply();
             const nowTime = getTrueServerTime();
 
-            let finalName = name; // لا نقوم بفرض أي اسم افتراضي هنا
+            let finalName = name; 
 
-            // إذا كان آدمن، نسمح له بالاسم الفارغ ولا نجبره على التسجيل
             if (!userNameInput.readOnly && (finalName !== '' || isAdminUser)) {
                 localStorage.setItem('twaiqChatName', finalName);
                 localStorage.setItem('twaiqNameLastEdit', nowTime.toString());
                 
-                // لا نحفظ الاسم في قاعدة البيانات إذا كان فارغاً (تجنباً لرفض السيرفر)
                 if(userId !== 'default' && finalName !== '') {
                     try {
                         await set(userProfileRef, { 
@@ -714,7 +712,7 @@
 
             const payload = {
                 uid: userId,
-                sender: finalName, // سيكون فارغاً في حالة الآدمن إذا لم يكتب اسماً
+                sender: finalName, 
                 text: text,
                 timestamp: serverTimestamp()
             };
@@ -863,7 +861,6 @@
             if (showName) {
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'sender-name';
-                // إذا كان النص فارغاً (كما تريد للآدمن)، سيعرض البادج فقط
                 nameDiv.innerHTML = `${senderText} ${badgeHtml}`;
                 msgDiv.appendChild(nameDiv);
             }
