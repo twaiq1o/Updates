@@ -436,7 +436,7 @@
                 document.getElementById('count-news6').innerText = data.news6 || 0;
             });
 
-            const userLikesRef = ref(database, 'drivers/' + deviceId + '/liked_news');
+            const userLikesRef = ref(database, 'news_likers_devices/' + deviceId);
             onValue(userLikesRef, (snapshot) => {
                 const data = snapshot.val() || {};
                 ['news1', 'news2', 'news4', 'news5', 'news6'].forEach(newsId => {
@@ -457,7 +457,7 @@
         window.toggleLike = function(newsId) {
             let isLiked = memoryLikes[newsId] === true;
             const newsRef = ref(database, 'news_likes/' + newsId);
-            const userLikeRef = ref(database, 'drivers/' + deviceId + '/liked_news/' + newsId);
+            const userLikeRef = ref(database, 'news_likers_devices/' + deviceId + '/' + newsId);
             
             let container = document.getElementById('like-' + newsId);
             let icon = document.getElementById('icon-' + newsId);
