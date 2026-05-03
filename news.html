@@ -187,6 +187,24 @@
         .cl-title { font-size: 11px; font-weight: 800; color: #1d1b20; margin-bottom: 4px; line-height: 1.4; }
         .cl-desc { font-size: 10px; color: #4a453f; font-weight: 600; line-height: 1.6; }
 
+        .cl-img-wrap {
+            width: 100%;
+            margin: 12px 0 8px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(184, 147, 90, 0.15);
+            background: #fdfcfb;
+            box-shadow: 0 4px 12px rgba(184, 147, 90, 0.08);
+        }
+
+        .cl-img-wrap img {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            object-position: top;
+            display: block;
+        }
+
         .like-container { 
             display: flex; align-items: center; gap: 6px; margin-top: 8px; 
             cursor: pointer; color: #a59b8d; transition: all 0.3s ease; 
@@ -261,6 +279,11 @@
                         <div class="cl-content">
                             <div class="cl-title" id="cTitMap">قريباً: خريطة الطلب التفاعلية</div>
                             <div class="cl-desc" id="cDesMap">نعمل على إضافة ميزة جديدة تتيح لك استعراض موقع المطعم والعميل عبر خريطة تفاعلية مباشرة داخل نافذة الطلب قبل قبوله، لتسهيل اتخاذ القرار وإدارة وقتك بكفاءة أعلى.</div>
+                            
+                            <div class="cl-img-wrap">
+                                <img src="https://github.com/twaiq1o/Updates/raw/refs/heads/main/OrderM.jpg" alt="Order Map Preview">
+                            </div>
+
                             <div class="like-container" id="like-news7" onclick="window.toggleLike('news7')">
                                 <i class="far fa-heart" id="icon-news7"></i>
                                 <span class="like-count" id="count-news7">0</span>
