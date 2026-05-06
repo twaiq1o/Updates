@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -391,11 +392,11 @@
         <img class="modal-content" id="modalFullImg">
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getDatabase, ref, onValue, runTransaction, goOffline, goOnline, set, remove } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js"; 
 
-    <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDuWatMSvdlLcHyqkiDvu6KLyRUOf0GCUg",
             authDomain: "countertwaiq.firebaseapp.com",
@@ -407,21 +408,14 @@
             measurementId: "G-853JKE00G2"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const auth = firebase.auth();
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
         
-        // إجبار فايربيس على استخدام الذاكرة العشوائية لتخطي قيود التطبيق
-        auth.setPersistence(firebase.auth.Auth.Persistence.NONE)
-            .then(() => auth.signInAnonymously())
-            .then(() => fetchInitialLikes())
-            .catch(() => {
-                // حتى لو فشل الدخول لأي سبب، بيجيب اللايكات غصب
-                fetchInitialLikes();
-            });
+        const auth = getAuth(app);
+        signInAnonymously(auth).catch(() => {});
 
-        function killConnection() { try { database.goOffline(); } catch(e) {} }
-        function restoreConnection() { try { database.goOnline(); } catch(e) {} }
+        function killConnection() { try { goOffline(database); } catch(e) {} }
+        function restoreConnection() { try { goOnline(database); } catch(e) {} }
 
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') killConnection();
@@ -570,17 +564,15 @@
                     setTimeout(() => {
                         let overlay = document.getElementById('loadingOverlay');
                         let content = document.getElementById('contentTransition');
-                        if(overlay && content) {
-                            overlay.style.opacity = '0';
-                            overlay.style.visibility = 'hidden';
-                            content.style.opacity = '1';
-                        }
+                        overlay.style.opacity = '0';
+                        overlay.style.visibility = 'hidden';
+                        content.style.opacity = '1';
                     }, 400); 
                 }
             }
 
-            const likesRef = database.ref('news_likes');
-            likesRef.on('value', (snapshot) => {
+            const likesRef = ref(database, 'news_likes');
+            onValue(likesRef, (snapshot) => {
                 const data = snapshot.val() || {};
                 document.getElementById('count-news1').innerText = data.news1 || 0;
                 document.getElementById('count-news2').innerText = data.news2 || 0;
@@ -591,13 +583,10 @@
                 
                 likesLoaded = true;
                 revealContent();
-            }, (error) => {
-                likesLoaded = true;
-                revealContent();
             });
 
-            const userLikesRef = database.ref('news_likers_devices/' + deviceId);
-            userLikesRef.once('value').then((snapshot) => {
+            const userLikesRef = ref(database, 'news_likers_devices/' + deviceId);
+            onValue(userLikesRef, (snapshot) => {
                 const data = snapshot.val() || {};
                 ['news1', 'news2', 'news4', 'news5', 'news6', 'news7'].forEach(newsId => {
                     if (data[newsId] === true) {
@@ -614,10 +603,7 @@
                 
                 userLikesLoaded = true;
                 revealContent();
-            }).catch((error) => {
-                userLikesLoaded = true;
-                revealContent();
-            });
+            }, { onlyOnce: true });
 
             setTimeout(() => {
                 likesLoaded = true;
@@ -628,34 +614,32 @@
 
         window.toggleLike = function(newsId) {
             let isLiked = memoryLikes[newsId] === true;
-            const newsRef = database.ref('news_likes/' + newsId);
-            const userLikeRef = database.ref('news_likers_devices/' + deviceId + '/' + newsId);
+            const newsRef = ref(database, 'news_likes/' + newsId);
+            const userLikeRef = ref(database, 'news_likers_devices/' + deviceId + '/' + newsId);
             
             let container = document.getElementById('like-' + newsId);
             let icon = document.getElementById('icon-' + newsId);
 
             if (isLiked) {
-                newsRef.transaction((currentLikes) => (currentLikes || 1) - 1).catch(()=>{});
-                userLikeRef.remove().catch(()=>{});
+                runTransaction(newsRef, (currentLikes) => (currentLikes || 1) - 1);
+                remove(userLikeRef);
                 memoryLikes[newsId] = false;
 
-                if(container && icon) {
-                    container.classList.remove('liked');
-                    icon.classList.remove('fas');
-                    icon.classList.add('far');
-                }
+                container.classList.remove('liked');
+                icon.classList.remove('fas');
+                icon.classList.add('far');
             } else {
-                newsRef.transaction((currentLikes) => (currentLikes || 0) + 1).catch(()=>{});
-                userLikeRef.set(true).catch(()=>{});
+                runTransaction(newsRef, (currentLikes) => (currentLikes || 0) + 1);
+                set(userLikeRef, true);
                 memoryLikes[newsId] = true;
 
-                if(container && icon) {
-                    container.classList.add('liked');
-                    icon.classList.remove('far');
-                    icon.classList.add('fas');
-                }
+                container.classList.add('liked');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
             }
         };
+
+        fetchInitialLikes();
 
         const imgModal = document.getElementById('imgModal');
         const targetImg = document.getElementById('targetNewsImg');
