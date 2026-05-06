@@ -391,9 +391,9 @@
         <img class="modal-content" id="modalFullImg">
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -411,13 +411,14 @@
         const database = firebase.database();
         const auth = firebase.auth();
         
-        auth.signInAnonymously().then(() => {
-            fetchInitialLikes();
-        }).catch(() => {
-            document.getElementById('loadingOverlay').style.opacity = '0';
-            document.getElementById('loadingOverlay').style.visibility = 'hidden';
-            document.getElementById('contentTransition').style.opacity = '1';
-        });
+        // إجبار فايربيس على استخدام الذاكرة العشوائية لتخطي قيود التطبيق
+        auth.setPersistence(firebase.auth.Auth.Persistence.NONE)
+            .then(() => auth.signInAnonymously())
+            .then(() => fetchInitialLikes())
+            .catch(() => {
+                // حتى لو فشل الدخول لأي سبب، بيجيب اللايكات غصب
+                fetchInitialLikes();
+            });
 
         function killConnection() { try { database.goOffline(); } catch(e) {} }
         function restoreConnection() { try { database.goOnline(); } catch(e) {} }
@@ -569,9 +570,11 @@
                     setTimeout(() => {
                         let overlay = document.getElementById('loadingOverlay');
                         let content = document.getElementById('contentTransition');
-                        overlay.style.opacity = '0';
-                        overlay.style.visibility = 'hidden';
-                        content.style.opacity = '1';
+                        if(overlay && content) {
+                            overlay.style.opacity = '0';
+                            overlay.style.visibility = 'hidden';
+                            content.style.opacity = '1';
+                        }
                     }, 400); 
                 }
             }
@@ -588,10 +591,13 @@
                 
                 likesLoaded = true;
                 revealContent();
+            }, (error) => {
+                likesLoaded = true;
+                revealContent();
             });
 
             const userLikesRef = database.ref('news_likers_devices/' + deviceId);
-            userLikesRef.once('value', (snapshot) => {
+            userLikesRef.once('value').then((snapshot) => {
                 const data = snapshot.val() || {};
                 ['news1', 'news2', 'news4', 'news5', 'news6', 'news7'].forEach(newsId => {
                     if (data[newsId] === true) {
@@ -606,6 +612,9 @@
                     }
                 });
                 
+                userLikesLoaded = true;
+                revealContent();
+            }).catch((error) => {
                 userLikesLoaded = true;
                 revealContent();
             });
@@ -626,21 +635,25 @@
             let icon = document.getElementById('icon-' + newsId);
 
             if (isLiked) {
-                newsRef.transaction((currentLikes) => (currentLikes || 1) - 1);
-                userLikeRef.remove();
+                newsRef.transaction((currentLikes) => (currentLikes || 1) - 1).catch(()=>{});
+                userLikeRef.remove().catch(()=>{});
                 memoryLikes[newsId] = false;
 
-                container.classList.remove('liked');
-                icon.classList.remove('fas');
-                icon.classList.add('far');
+                if(container && icon) {
+                    container.classList.remove('liked');
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                }
             } else {
-                newsRef.transaction((currentLikes) => (currentLikes || 0) + 1);
-                userLikeRef.set(true);
+                newsRef.transaction((currentLikes) => (currentLikes || 0) + 1).catch(()=>{});
+                userLikeRef.set(true).catch(()=>{});
                 memoryLikes[newsId] = true;
 
-                container.classList.add('liked');
-                icon.classList.remove('far');
-                icon.classList.add('fas');
+                if(container && icon) {
+                    container.classList.add('liked');
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                }
             }
         };
 
