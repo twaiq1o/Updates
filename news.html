@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -165,6 +164,7 @@
         .changelog-list li:nth-child(4) { animation-delay: 0.4s; }
         .changelog-list li:nth-child(5) { animation-delay: 0.5s; }
         .changelog-list li:nth-child(6) { animation-delay: 0.6s; }
+        .changelog-list li:nth-child(7) { animation-delay: 0.7s; }
 
         @keyframes slideInRight { to { opacity: 1; transform: translateX(0); } }
         @keyframes slideInLeft { to { opacity: 1; transform: translateX(0); } }
@@ -307,6 +307,17 @@
             <div class="changelog-container">
                 <div class="changelog-title"><i class="fas fa-bolt"></i> <span id="uTitle">آخر الأخبار</span></div>
                 <ul class="changelog-list">
+                    <li class="highlight-item">
+                        <i class="fas fa-crown cl-icon"></i>
+                        <div class="cl-content">
+                            <div class="cl-title" id="cTitV15">إطلاق الإصدار الجديد v15.0</div>
+                            <div class="cl-desc" id="cDesV15">تم إطلاق الإصدار 15.0 بنجاح! يأتي هذا التحديث متوافقاً مع أحدث إصدار رسمي بعد إيقاف الشركة للإصدارات القديمة. قام فريقنا بإعادة برمجة التطبيق بالكامل ونقل كافة الميزات والتعديلات الحصرية لضمان استمرار تقديم أفضل تجربة لكم.</div>
+                            <div class="like-container" id="like-news8" onclick="window.toggleLike('news8')">
+                                <i class="far fa-heart" id="icon-news8"></i>
+                                <span class="like-count" id="count-news8">0</span>
+                            </div>
+                        </div>
+                    </li>
                     <li class="highlight-item">
                         <i class="fas fa-map-marked-alt cl-icon"></i>
                         <div class="cl-content">
@@ -464,6 +475,8 @@
                 loadingTxt: 'جاري تحميل أحدث الأخبار...',
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
                 upTitle: 'آخر الأخبار', btn: 'حسناً',
+                cTitV15: 'إطلاق الإصدار الجديد v15.0',
+                cDesV15: 'تم إطلاق الإصدار 15.0 بنجاح! يأتي هذا التحديث متوافقاً مع أحدث إصدار رسمي بعد إيقاف الشركة للإصدارات القديمة. قام فريقنا بإعادة برمجة التطبيق بالكامل ونقل كافة الميزات والتعديلات الحصرية لضمان استمرار تقديم أفضل تجربة لكم.',
                 cTitV14_4: 'إطلاق الإصدار الجديد v14.5',
                 cDesV14_4: 'تم إطلاق الإصدار 14.5 بنجاح! يتضمن هذا التحديث إضافة خريطة الطلب التفاعلية التي تتيح لك استعراض موقع المطعم والعميل مباشرة داخل نافذة الطلب قبل قبوله، لتسهيل اتخاذ القرار وإدارة وقتك بكفاءة أعلى.',
                 cTitV14: 'إطلاق الإصدار الجديد v14.1',
@@ -482,6 +495,8 @@
                 loadingTxt: 'Loading latest news...',
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
                 upTitle: 'Latest News', btn: 'OK',
+                cTitV15: 'Version v15.0 Released',
+                cDesV15: 'Version 15.0 has been successfully released! This update is built on the latest official release following the company\'s deprecation of older versions. Our team has fully reprogrammed the application, seamlessly porting all exclusive features and modifications to ensure the best continuous experience for you.',
                 cTitV14_4: 'Version v14.5 Released',
                 cDesV14_4: 'Version 14.5 has been successfully released! This update includes the interactive order map feature, allowing you to view the restaurant and customer locations directly in the order window before accepting, helping you make better decisions and manage your time efficiently.',
                 cTitV14: 'Version v14.1 Released',
@@ -514,6 +529,8 @@
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
+            document.getElementById('cTitV15').innerText = d.cTitV15;
+            document.getElementById('cDesV15').innerText = d.cDesV15;
             document.getElementById('cTitV14_4').innerText = d.cTitV14_4;
             document.getElementById('cDesV14_4').innerText = d.cDesV14_4;
             document.getElementById('cTitV14').innerText = d.cTitV14;
@@ -580,6 +597,7 @@
                 document.getElementById('count-news5').innerText = data.news5 || 0;
                 document.getElementById('count-news6').innerText = data.news6 || 0;
                 document.getElementById('count-news7').innerText = data.news7 || 0;
+                document.getElementById('count-news8').innerText = data.news8 || 0;
                 
                 likesLoaded = true;
                 revealContent();
@@ -588,7 +606,7 @@
             const userLikesRef = ref(database, 'news_likers_devices/' + deviceId);
             onValue(userLikesRef, (snapshot) => {
                 const data = snapshot.val() || {};
-                ['news1', 'news2', 'news4', 'news5', 'news6', 'news7'].forEach(newsId => {
+                ['news1', 'news2', 'news4', 'news5', 'news6', 'news7', 'news8'].forEach(newsId => {
                     if (data[newsId] === true) {
                         memoryLikes[newsId] = true;
                         let container = document.getElementById('like-' + newsId);
