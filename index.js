@@ -1,1 +1,55 @@
-const a=require('firebase-admin');const s=JSON.parse(Buffer.from("eyJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsICJwcm9qZWN0X2lkIjogImV4cGlyZXR3YWlxIiwgInByaXZhdGVfa2V5X2lkIjogIjMxNjAwMDBkMzcyYzdhY2ZkY2Y5MjAwODZhMjJhYWMyMWJlNzQ0MzMiLCAicHJpdmF0ZV9rZXkiOiAiLS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tXG5NSUlFdndJQkFEQU5CZ2txaGtpRzl3MEJBUUVGQUFTQ0JLa3dnZ1NsQWdFQUFvSUJBUURmQ1JzQ3ZFem5YYnk4XG52VGVxeEZSMXpFaklnSkoyejVMWnJNUHF2NjdtVFoyTXhYNFlUUk5MZStkVEEyMjBJRmlLZVhlbkVFZ01rQnV2XG5sS0dxbEkzWEJRbWdUSUN3ZHlWU1RXSk5pWnRadEl3L1d6aWwvVmYyYnRZT1hKUVJRNUc2aS9ZVU1peWVtTzVwXG5maGU4OWhJbWk3NTVsTVdYeE1CVDFSbkdiMys0cER4OEIrZEFYK2dGUVlOUUJ6SlBpNEwzVWxQT0FXQnZMVkVrXG4wSGwwS0lwYjBpQUZrT3ExVkZ6MW41SThzYXQ1ZzlkZ0w3ZzI3WnVNY1VyUEdnZ01BZVlWaW9qMHJtcXpOeHl4XG4yRkFWcGMvQlZoaWJsdkZFOHJIdnBDMGt5NmltQmh1R0pkb2F4blY5MXFGSEZZYU0xajZZK0Y0Z2dWbjVOQjZLXG5jNFRFZDhXMUFnTUJBQUVDZ2dFQUt4aDRFT01BREJ1cmJwKzBMQ216OVRBRUowUGFxUnpxTCtmSFVtcDMyZFhJXG4rY3ltVlAwOW0zSUZURi9HK0kxZ2RsOUtuS3dUYytQN2lZVnphSUc4VjM0SWNtSWQ0cHNmQ2NSY21JVmNrR3lIXHUwMGUwektMV25ZNzFlWEplTVg3cVo0NzBNRHpKenR6QnZMdENYdHlJbjl5MDg0SUs3M0Z1KzJ1UDhEMEQzb1o0MFxuR1QxMDl1cWsxdWExYzhsS052endLM1VFTlhNMjI5R21yYVU2Rmw1YTFlaTZiQlBFWXRZVlIyckdFS3ljMjlkRFxuVlFsMHNWVE5hMXo3c21uTGNtMTUvWkN0WXpUaFgvbWtyam5lOEkzY29xK01HVS9mRW1ZY2p1T24vMVlpbkxBMlxuRThzeHZmZFdiTUtkK0tUV2NwSlJSMEdtWkU2WUlXWkpIZ2xIMmJzVmFRS0JnUUQwU0FOVm1jajg2WFE0c1VDV1xuYWdrVFlIUjVoNnUrcDIyOXdna1NnQVRzS2Q1L2xucFFudnpkQmJGOGhVRjhqYTR3bDZYYVpIQlBRcmxOU1RmMVxuQzVZbEdwUklVSzNUbk9mVFl3TnNnWVhiZElrTDY2cUJGenFsdWZsbnRmRUltclIxUndsMS9qdzR6VjF1a2FZWVxuaHJNd3VEV3BNZFFFMlRWNFhGN2FJQ0h0dVFLQmdRRHB2QzBvazJDSmk1MlRHczVhQnZsV2llMy9MZ0JHR3UxQ1xuUTJQMXlhbFdaSXAySnE1UmlrYW9VdDJ2V3ArQXorSXVrV255Sk1Jck5NckdXY0hBYjJJR3k1emFkTTE4MHcrV1xuZEdySU5TdFk0NEhsWFdydjNndEhHcFFRMzhob0ZIQ2V0ZjdldFVLTzkyWjlFcTl5Wnc2ZEpGNkxMK3lud0x2UlxuNEJtQ3RjaDEzUUtCZ1FEdkhtN2xKQnh5TmJQbXF0dW1ZVFZ4R2tIcGxMeXhiQU1vZFArY2RHUmRLTDc3OWJqVlxub2t1enJ4Y0Y1UXN0ZVNMQnZqQkRqMzNBbUhmN0Iya1hIYmhqcVpqdEVNeVhFRWg5eTdaV1NKTlhOc1BRUDJndlxuNVNVcmhOaDJoTXJrdVV0Y1lhVUpNMHlQN2JjL3ZLTHg3eWtJejhqM1RpZFVkNnEzbnZQYVlRblZRUUtCZ1FDcVxuR2kvSE90Smo1MzZyQXpRdjRxbHRLSDVUV3RnS0xTaUVNK1U0aUNXNzRQbS9tTkQrT0tMSmQxMHNjOGhuQjJOMVxuUHBDYkQ5TmJmRlVpVzBvZFVUSkcvY0hPWG5qNW9lVFRPekJIT2lLczB3M0NyZVRZWW9GVW91d2xCNmVpejFWU1xudStLYms5QzNtU2MyV1BYa1RVb2VaTXlGZ1VBNnFaSkg0RS9RaDVrMjVRS0JnUUN1eHNoUmJoc3RKTEJQTkNORFxuT1E5RTdHb1VFWlpONUhhUUtSTWhVNEVRU1MxMXB0SWpwOWZuV1cweHhwOFkvTjFreStUM2ljQXhNM253cUoyRFxucCtSVVo5M2hMdjNNenJxaDRGeWY4bSt6NU1EMzhlTFlKb3JLTmlnbjB4S0VDMmd4aGpncDRTV1RlTjhxUjNBcFxubklDVTNpRHU1cDVXV0N5djFrVithRnFHMlE9PQxuLS0tLS1FTkQgUFJJVkFTERSBLRVktLS0tLVxuIiwgImNsaWVudF9lbWFpbCI6ICJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BleHBpcmV0d2FpcS5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsICJjbGllbnRfaWQiOiAiMTAwMjI4MTg0NDgyNjM1MjUyMzA5IiwgImF1dGhfdXJpIjogImh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbS9vL29hdXRoMi9hdXRoIiwgInRva2VuX3VyaSI6ICJodHRwczovL29hdXRoMi5nb29nbGVhcGlzLmNvbS90b2tlbiIsICJhdXRoX3Byb3ZpZGVyX3g1MDlfY2VydF91cmwiOiAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vb2F1dGgyL3YxL2NlcnRzIiwgImNsaWVudF94NTA5X2NlcnRfdXJsIjogImh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL3JvYm90L3YxL21ldGFkYXRhL3g1MDkvZmlyZWJhc2UtYWRtaW5zZGstZmJzdmMlNDBleHBpcmV0d2FpcS5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsICJ1bml2ZXJzZV9kb21haW4iOiAiZ29vZ2xlYXBpcy5jb20ifQ==", "base64").toString("utf-8"));a.initializeApp({credential:a.credential.cert(s),databaseURL:"https://expiretwaiq-default-rtdb.firebaseio.com/"});const d=a.database(),r=d.ref("Activations");async function f(){try{const t=await r.once("value");if(!t.exists())process.exit(0);const n=Date.now(),o=2592000000,u={};t.forEach(c=>{const k=c.key,v=c.val();if(!v||v.time===0||!v.time)return;let e=Number(v.time);if(v.exact===false||v.exact==="false")e+=o;if(n>e)u[`${k}/time`]=0});if(Object.keys(u).length>0){await r.update(u)}process.exit(0)}catch(e){console.error("DETAILED_ERROR:",e);process.exit(1)}}f();
+const admin = require("firebase-admin");
+
+// سحب المفتاح السري بشكل آمن ومموه من GitHub Secrets
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://expiretwaiq-default-rtdb.firebaseio.com" // رابط قاعدة بياناتك
+});
+
+const db = admin.database();
+const ref = db.ref("Activations");
+
+async function runCronJob() {
+  const snapshot = await ref.once("value");
+  const data = snapshot.val();
+  
+  if (!data) return console.log("No data found.");
+
+  const now = Date.now();
+  const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+  const updates = {};
+
+  for (const [key, value] of Object.entries(data)) {
+    // تخطي السجلات التي لا تحتوي على وقت أو التي تم تصفيرها مسبقاً
+    if (!value || typeof value.time !== "number" || value.time === 0) continue;
+
+    let expireTime = value.time;
+    
+    // إذا كانت الحالة false، نضيف 30 يوم
+    if (value.exact === false) {
+      expireTime += thirtyDaysInMs;
+    }
+
+    // المقارنة مع الوقت الحالي
+    if (now >= expireTime) {
+      updates[`${key}/time`] = 0; // تحويل الوقت إلى صفر
+    }
+  }
+
+  // تحديث قاعدة البيانات دفعة واحدة إذا كان هناك تعديلات
+  if (Object.keys(updates).length > 0) {
+    await ref.update(updates);
+    console.log(`Updated ${Object.keys(updates).length} records successfully.`);
+  } else {
+    console.log("All records are valid. No updates needed.");
+  }
+}
+
+runCronJob()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error("Error updating database:", error);
+    process.exit(1);
+  });
