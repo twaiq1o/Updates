@@ -1,8 +1,0 @@
-{
-  "name": "cron-job",
-  "version": "1.0.0",
-  "main": "index.js",
-  "dependencies": {
-    "firebase-admin": "^12.0.0"
-  }
-}
