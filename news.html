@@ -165,6 +165,7 @@
         .changelog-list li:nth-child(5) { animation-delay: 0.5s; }
         .changelog-list li:nth-child(6) { animation-delay: 0.6s; }
         .changelog-list li:nth-child(7) { animation-delay: 0.7s; }
+        .changelog-list li:nth-child(8) { animation-delay: 0.8s; }
 
         @keyframes slideInRight { to { opacity: 1; transform: translateX(0); } }
         @keyframes slideInLeft { to { opacity: 1; transform: translateX(0); } }
@@ -307,7 +308,21 @@
             <div class="changelog-container">
                 <div class="changelog-title"><i class="fas fa-bolt"></i> <span id="uTitle">آخر الأخبار</span></div>
                 <ul class="changelog-list">
+                    
+                    <!-- الخبر الجديد المضاف حديثاً (البطاقة المميزة) -->
                     <li class="highlight-item">
+                        <i class="fas fa-tachometer-alt cl-icon"></i>
+                        <div class="cl-content">
+                            <div class="cl-title" id="cTitV16">ترقبوا قريباً الإصدار v16.0</div>
+                            <div class="cl-desc" id="cDesV16">نعمل حالياً على تطوير محرك جديد كلياً سيوفر سرعة استثنائية وخيالية في نظام قبول الطلبات. ورغم أن محركنا الحالي هو الأسرع والأقوى بلا منازع، إلا أننا قررنا منافسة أنفسنا لتقديم تجربة تتخطى حدود السرعة وتضع معايير جديدة كلياً للأداء!</div>
+                            <div class="like-container" id="like-news9" onclick="window.toggleLike('news9')">
+                                <i class="far fa-heart" id="icon-news9"></i>
+                                <span class="like-count" id="count-news9">0</span>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li>
                         <i class="fas fa-crown cl-icon"></i>
                         <div class="cl-content">
                             <div class="cl-title" id="cTitV15">إطلاق الإصدار الجديد v15.0</div>
@@ -318,7 +333,7 @@
                             </div>
                         </div>
                     </li>
-                    <li class="highlight-item">
+                    <li>
                         <i class="fas fa-map-marked-alt cl-icon"></i>
                         <div class="cl-content">
                             <div class="cl-title" id="cTitV14_4">إطلاق الإصدار الجديد v14.5</div>
@@ -475,6 +490,8 @@
                 loadingTxt: 'جاري تحميل أحدث الأخبار...',
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
                 upTitle: 'آخر الأخبار', btn: 'حسناً',
+                cTitV16: 'ترقبوا قريباً الإصدار v16.0',
+                cDesV16: 'نعمل حالياً على تطوير محرك جديد كلياً سيوفر سرعة استثنائية وخيالية في نظام قبول الطلبات. ورغم أن محركنا الحالي هو الأسرع والأقوى بلا منازع، إلا أننا قررنا منافسة أنفسنا لتقديم تجربة تتخطى حدود السرعة وتضع معايير جديدة كلياً للأداء!',
                 cTitV15: 'إطلاق الإصدار الجديد v15.0',
                 cDesV15: 'تم إطلاق الإصدار 15.0 بنجاح! يأتي هذا التحديث متوافقاً مع أحدث إصدار رسمي بعد إيقاف الشركة للإصدارات القديمة. قام فريقنا بإعادة برمجة التطبيق بالكامل ونقل كافة الميزات والتعديلات الحصرية لضمان استمرار تقديم أفضل تجربة لكم.',
                 cTitV14_4: 'إطلاق الإصدار الجديد v14.5',
@@ -495,6 +512,8 @@
                 loadingTxt: 'Loading latest news...',
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
                 upTitle: 'Latest News', btn: 'OK',
+                cTitV16: 'Coming Soon: Version v16.0',
+                cDesV16: 'We are developing a completely new engine that offers exceptional and unmatched speed in the order acceptance system. Although our current engine is already the fastest and most powerful, we continue to compete with ourselves to deliver an experience that pushes the limits of speed and sets new performance standards!',
                 cTitV15: 'Version v15.0 Released',
                 cDesV15: 'Version 15.0 has been successfully released! This update is built on the latest official release following the company\'s deprecation of older versions. Our team has fully reprogrammed the application, seamlessly porting all exclusive features and modifications to ensure the best continuous experience for you.',
                 cTitV14_4: 'Version v14.5 Released',
@@ -529,6 +548,8 @@
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
+            document.getElementById('cTitV16').innerText = d.cTitV16;
+            document.getElementById('cDesV16').innerText = d.cDesV16;
             document.getElementById('cTitV15').innerText = d.cTitV15;
             document.getElementById('cDesV15').innerText = d.cDesV15;
             document.getElementById('cTitV14_4').innerText = d.cTitV14_4;
@@ -598,6 +619,7 @@
                 document.getElementById('count-news6').innerText = data.news6 || 0;
                 document.getElementById('count-news7').innerText = data.news7 || 0;
                 document.getElementById('count-news8').innerText = data.news8 || 0;
+                document.getElementById('count-news9').innerText = data.news9 || 0;
                 
                 likesLoaded = true;
                 revealContent();
@@ -606,7 +628,7 @@
             const userLikesRef = ref(database, 'news_likers_devices/' + deviceId);
             onValue(userLikesRef, (snapshot) => {
                 const data = snapshot.val() || {};
-                ['news1', 'news2', 'news4', 'news5', 'news6', 'news7', 'news8'].forEach(newsId => {
+                ['news1', 'news2', 'news4', 'news5', 'news6', 'news7', 'news8', 'news9'].forEach(newsId => {
                     if (data[newsId] === true) {
                         memoryLikes[newsId] = true;
                         let container = document.getElementById('like-' + newsId);
