@@ -157,6 +157,32 @@
             margin-bottom: 5px;
         }
 
+        .changelog-list li.highlight-premium {
+            background: linear-gradient(135deg, #fffcf7 0%, #ffffff 100%);
+            border: 1px solid rgba(184, 147, 90, 0.5);
+            padding: 14px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(184, 147, 90, 0.15);
+            margin-bottom: 5px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .changelog-list li.highlight-premium::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, #b8935a, #fceabf, #b8935a);
+            animation: gradientMove 2.5s infinite linear;
+            background-size: 200% 100%;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
         html[dir="ltr"] .changelog-list li { transform: translateX(-10px); animation-name: slideInLeft; }
         .changelog-list li:nth-child(1) { animation-delay: 0.1s; }
         .changelog-list li:nth-child(2) { animation-delay: 0.2s; }
@@ -166,6 +192,7 @@
         .changelog-list li:nth-child(6) { animation-delay: 0.6s; }
         .changelog-list li:nth-child(7) { animation-delay: 0.7s; }
         .changelog-list li:nth-child(8) { animation-delay: 0.8s; }
+        .changelog-list li:nth-child(9) { animation-delay: 0.9s; }
 
         @keyframes slideInRight { to { opacity: 1; transform: translateX(0); } }
         @keyframes slideInLeft { to { opacity: 1; transform: translateX(0); } }
@@ -175,7 +202,7 @@
             animation: floatingIcon 3s ease-in-out infinite; 
         }
 
-        .highlight-item .cl-icon {
+        .highlight-item .cl-icon, .highlight-premium .cl-icon {
             animation: pulseStar 2s infinite;
         }
 
@@ -309,8 +336,19 @@
                 <div class="changelog-title"><i class="fas fa-bolt"></i> <span id="uTitle">آخر الأخبار</span></div>
                 <ul class="changelog-list">
                     
-                    <!-- الخبر الجديد المضاف حديثاً (البطاقة المميزة) -->
-                    <li class="highlight-item">
+                    <li class="highlight-premium">
+                        <i class="fas fa-rocket cl-icon"></i>
+                        <div class="cl-content">
+                            <div class="cl-title" id="cTitV16New">إطلاق الإصدار الجديد v16.0</div>
+                            <div class="cl-desc" id="cDesV16New">تم إطلاق الإصدار 16.0 رسمياً والمزود بالمحرك الجديد كلياً! يتميز هذا التحديث باستقرار فائق وسرعة استثنائية في نظام القبول، مع معالجة وإصلاح أغلب المشاكل السابقة لضمان تجربة عمل احترافية وخالية من العوائق.</div>
+                            <div class="like-container" id="like-news10" onclick="window.toggleLike('news10')">
+                                <i class="far fa-heart" id="icon-news10"></i>
+                                <span class="like-count" id="count-news10">0</span>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li>
                         <i class="fas fa-tachometer-alt cl-icon"></i>
                         <div class="cl-content">
                             <div class="cl-title" id="cTitV16">ترقبوا قريباً الإصدار v16.0</div>
@@ -490,6 +528,8 @@
                 loadingTxt: 'جاري تحميل أحدث الأخبار...',
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
                 upTitle: 'آخر الأخبار', btn: 'حسناً',
+                cTitV16New: 'إطلاق الإصدار الجديد v16.0',
+                cDesV16New: 'تم إطلاق الإصدار 16.0 رسمياً والمزود بالمحرك الجديد كلياً! يتميز هذا التحديث باستقرار فائق وسرعة استثنائية في نظام القبول، مع معالجة وإصلاح أغلب المشاكل السابقة لضمان تجربة عمل احترافية وخالية من العوائق.',
                 cTitV16: 'ترقبوا قريباً الإصدار v16.0',
                 cDesV16: 'نعمل حالياً على تطوير محرك جديد كلياً سيوفر سرعة استثنائية وخيالية في نظام قبول الطلبات. ورغم أن محركنا الحالي هو الأسرع والأقوى بلا منازع، إلا أننا قررنا منافسة أنفسنا لتقديم تجربة تتخطى حدود السرعة وتضع معايير جديدة كلياً للأداء!',
                 cTitV15: 'إطلاق الإصدار الجديد v15.0',
@@ -512,6 +552,8 @@
                 loadingTxt: 'Loading latest news...',
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
                 upTitle: 'Latest News', btn: 'OK',
+                cTitV16New: 'Version v16.0 Released',
+                cDesV16New: 'Version 16.0 equipped with the completely new acceptance engine is officially released! This update features ultimate stability and exceptional speed in the acceptance system, with most previous issues radically fixed to ensure a professional and seamless working experience.',
                 cTitV16: 'Coming Soon: Version v16.0',
                 cDesV16: 'We are developing a completely new engine that offers exceptional and unmatched speed in the order acceptance system. Although our current engine is already the fastest and most powerful, we continue to compete with ourselves to deliver an experience that pushes the limits of speed and sets new performance standards!',
                 cTitV15: 'Version v15.0 Released',
@@ -548,6 +590,8 @@
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
+            document.getElementById('cTitV16New').innerText = d.cTitV16New;
+            document.getElementById('cDesV16New').innerText = d.cDesV16New;
             document.getElementById('cTitV16').innerText = d.cTitV16;
             document.getElementById('cDesV16').innerText = d.cDesV16;
             document.getElementById('cTitV15').innerText = d.cTitV15;
@@ -620,6 +664,7 @@
                 document.getElementById('count-news7').innerText = data.news7 || 0;
                 document.getElementById('count-news8').innerText = data.news8 || 0;
                 document.getElementById('count-news9').innerText = data.news9 || 0;
+                document.getElementById('count-news10').innerText = data.news10 || 0;
                 
                 likesLoaded = true;
                 revealContent();
@@ -628,7 +673,7 @@
             const userLikesRef = ref(database, 'news_likers_devices/' + deviceId);
             onValue(userLikesRef, (snapshot) => {
                 const data = snapshot.val() || {};
-                ['news1', 'news2', 'news4', 'news5', 'news6', 'news7', 'news8', 'news9'].forEach(newsId => {
+                ['news1', 'news2', 'news4', 'news5', 'news6', 'news7', 'news8', 'news9', 'news10'].forEach(newsId => {
                     if (data[newsId] === true) {
                         memoryLikes[newsId] = true;
                         let container = document.getElementById('like-' + newsId);
