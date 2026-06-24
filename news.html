@@ -157,30 +157,28 @@
             margin-bottom: 5px;
         }
 
-        .changelog-list li.highlight-premium {
-            background: linear-gradient(135deg, #fffcf7 0%, #ffffff 100%);
+        .changelog-list li.release-highlight {
+            background: linear-gradient(135deg, #fffdf8 0%, #ffffff 100%);
             border: 1px solid rgba(184, 147, 90, 0.5);
             padding: 14px;
             border-radius: 12px;
             box-shadow: 0 6px 20px rgba(184, 147, 90, 0.15);
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             position: relative;
             overflow: hidden;
-            z-index: 1;
         }
 
-        .changelog-list li.highlight-premium::before {
+        .changelog-list li.release-highlight::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; height: 3px;
-            background: linear-gradient(90deg, #b8935a, #fceabf, #b8935a);
-            animation: gradientMove 2.5s infinite linear;
-            background-size: 200% 100%;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(184,147,90,0.15) 50%, rgba(255,255,255,0) 100%);
+            animation: shimmerEffect 3s infinite;
         }
 
-        @keyframes gradientMove {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
+        @keyframes shimmerEffect {
+            100% { left: 200%; }
         }
 
         html[dir="ltr"] .changelog-list li { transform: translateX(-10px); animation-name: slideInLeft; }
@@ -193,6 +191,7 @@
         .changelog-list li:nth-child(7) { animation-delay: 0.7s; }
         .changelog-list li:nth-child(8) { animation-delay: 0.8s; }
         .changelog-list li:nth-child(9) { animation-delay: 0.9s; }
+        .changelog-list li:nth-child(10) { animation-delay: 1.0s; }
 
         @keyframes slideInRight { to { opacity: 1; transform: translateX(0); } }
         @keyframes slideInLeft { to { opacity: 1; transform: translateX(0); } }
@@ -202,7 +201,7 @@
             animation: floatingIcon 3s ease-in-out infinite; 
         }
 
-        .highlight-item .cl-icon, .highlight-premium .cl-icon {
+        .highlight-item .cl-icon, .release-highlight .cl-icon {
             animation: pulseStar 2s infinite;
         }
 
@@ -212,7 +211,7 @@
             100% { transform: scale(1); }
         }
 
-        .cl-content { display: flex; flex-direction: column; width: 100%; }
+        .cl-content { display: flex; flex-direction: column; width: 100%; position: relative; z-index: 2; }
         .cl-title { font-size: 11px; font-weight: 800; color: #1d1b20; margin-bottom: 4px; line-height: 1.4; }
         .cl-desc { font-size: 10px; color: #4a453f; font-weight: 600; line-height: 1.6; }
 
@@ -336,11 +335,11 @@
                 <div class="changelog-title"><i class="fas fa-bolt"></i> <span id="uTitle">آخر الأخبار</span></div>
                 <ul class="changelog-list">
                     
-                    <li class="highlight-premium">
-                        <i class="fas fa-rocket cl-icon"></i>
+                    <li class="release-highlight">
+                        <i class="fas fa-fire cl-icon"></i>
                         <div class="cl-content">
-                            <div class="cl-title" id="cTitV16New">إطلاق الإصدار الجديد v16.0</div>
-                            <div class="cl-desc" id="cDesV16New">تم إطلاق الإصدار 16.0 رسمياً والمزود بالمحرك الجديد كلياً! يتميز هذا التحديث باستقرار فائق وسرعة استثنائية في نظام القبول، مع معالجة وإصلاح أغلب المشاكل السابقة لضمان تجربة عمل احترافية وخالية من العوائق.</div>
+                            <div class="cl-title" id="cTitV16_rel">إطلاق الإصدار الجديد v16.0 🔥</div>
+                            <div class="cl-desc" id="cDesV16_rel">تم إطلاق الإصدار 16.0 بنجاح! يأتي هذا التحديث بالمحرك الجديد كلياً لنظام القبول، ليقدم أداءً خيالياً وسرعة استثنائية. كما تم تعزيز استقرار التطبيق بشكل جذري وإصلاح أغلب المشاكل السابقة، لضمان تجربة عمل مثالية واحترافية.</div>
                             <div class="like-container" id="like-news10" onclick="window.toggleLike('news10')">
                                 <i class="far fa-heart" id="icon-news10"></i>
                                 <span class="like-count" id="count-news10">0</span>
@@ -528,8 +527,8 @@
                 loadingTxt: 'جاري تحميل أحدث الأخبار...',
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
                 upTitle: 'آخر الأخبار', btn: 'حسناً',
-                cTitV16New: 'إطلاق الإصدار الجديد v16.0',
-                cDesV16New: 'تم إطلاق الإصدار 16.0 رسمياً والمزود بالمحرك الجديد كلياً! يتميز هذا التحديث باستقرار فائق وسرعة استثنائية في نظام القبول، مع معالجة وإصلاح أغلب المشاكل السابقة لضمان تجربة عمل احترافية وخالية من العوائق.',
+                cTitV16_rel: 'إطلاق الإصدار الجديد v16.0 🔥',
+                cDesV16_rel: 'تم إطلاق الإصدار 16.0 بنجاح! يأتي هذا التحديث بالمحرك الجديد كلياً لنظام القبول، ليقدم أداءً خيالياً وسرعة استثنائية. كما تم تعزيز استقرار التطبيق بشكل جذري وإصلاح أغلب المشاكل السابقة، لضمان تجربة عمل مثالية واحترافية.',
                 cTitV16: 'ترقبوا قريباً الإصدار v16.0',
                 cDesV16: 'نعمل حالياً على تطوير محرك جديد كلياً سيوفر سرعة استثنائية وخيالية في نظام قبول الطلبات. ورغم أن محركنا الحالي هو الأسرع والأقوى بلا منازع، إلا أننا قررنا منافسة أنفسنا لتقديم تجربة تتخطى حدود السرعة وتضع معايير جديدة كلياً للأداء!',
                 cTitV15: 'إطلاق الإصدار الجديد v15.0',
@@ -552,8 +551,8 @@
                 loadingTxt: 'Loading latest news...',
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
                 upTitle: 'Latest News', btn: 'OK',
-                cTitV16New: 'Version v16.0 Released',
-                cDesV16New: 'Version 16.0 equipped with the completely new acceptance engine is officially released! This update features ultimate stability and exceptional speed in the acceptance system, with most previous issues radically fixed to ensure a professional and seamless working experience.',
+                cTitV16_rel: 'Version v16.0 Released 🔥',
+                cDesV16_rel: 'Version 16.0 has been successfully released! This update introduces the all-new acceptance engine, delivering phenomenal performance and exceptional speed. App stability has been significantly enhanced, and most previous issues have been resolved to ensure a flawless professional experience.',
                 cTitV16: 'Coming Soon: Version v16.0',
                 cDesV16: 'We are developing a completely new engine that offers exceptional and unmatched speed in the order acceptance system. Although our current engine is already the fastest and most powerful, we continue to compete with ourselves to deliver an experience that pushes the limits of speed and sets new performance standards!',
                 cTitV15: 'Version v15.0 Released',
@@ -590,8 +589,8 @@
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
-            document.getElementById('cTitV16New').innerText = d.cTitV16New;
-            document.getElementById('cDesV16New').innerText = d.cDesV16New;
+            document.getElementById('cTitV16_rel').innerText = d.cTitV16_rel;
+            document.getElementById('cDesV16_rel').innerText = d.cDesV16_rel;
             document.getElementById('cTitV16').innerText = d.cTitV16;
             document.getElementById('cDesV16').innerText = d.cDesV16;
             document.getElementById('cTitV15').innerText = d.cTitV15;
