@@ -90,17 +90,6 @@
         .lang-toggle:active { transform: scale(.95); }
         #globeIcon { color: #7d6b52; transition: transform .6s ease; }
 
-        .telegram-btn {
-            position: absolute; top: 20px; right: 20px; 
-            background: #fff; border: 1px solid #e1f0fa; color: #1d1b20; 
-            padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; 
-            font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 8px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,.04); transition: transform .2s; direction: ltr; z-index: 20;
-            text-decoration: none;
-        }
-        .telegram-btn:active { transform: scale(.95); }
-        #tgIcon { color: #54a9eb; font-size: 16px; transition: transform .6s ease; }
-
         .content-transition {
             display: flex; flex-direction: column; height: 100%;
             opacity: 0;
@@ -194,6 +183,8 @@
         .changelog-list li:nth-child(8) { animation-delay: 0.8s; }
         .changelog-list li:nth-child(9) { animation-delay: 0.9s; }
         .changelog-list li:nth-child(10) { animation-delay: 1.0s; }
+        .changelog-list li:nth-child(11) { animation-delay: 1.1s; }
+        .changelog-list li:nth-child(12) { animation-delay: 1.2s; }
 
         @keyframes slideInRight { to { opacity: 1; transform: translateX(0); } }
         @keyframes slideInLeft { to { opacity: 1; transform: translateX(0); } }
@@ -319,11 +310,6 @@
             <span id="langText" style="margin-top: 2px;">English</span>
         </button>
 
-        <a href="https://t.me/NinjaTwaiq" class="telegram-btn" id="tgBtn">
-            <i class="fab fa-telegram-plane" id="tgIcon"></i> 
-            <span id="tgText" style="margin-top: 2px;">قناتنا</span>
-        </a>
-
         <div id="contentTransition" class="content-transition">
             <div class="update-box-wrap">
                 <div class="brand-badge"><i class="far fa-newspaper"></i></div>
@@ -338,6 +324,18 @@
                 <ul class="changelog-list">
                     
                     <li class="release-highlight">
+                        <i class="fas fa-star cl-icon"></i>
+                        <div class="cl-content">
+                            <div class="cl-title" id="cTitV16_7">إطلاق الإصدار الجديد v16.7 🚀</div>
+                            <div class="cl-desc" id="cDesV16_7">بعد إيقاف الشركة لجميع التطبيقات المعدلة، قمنا بتطوير تطبيق منفصل وخاص بنا بالكامل. يضم التطبيق كافة خدماتنا الحصرية ببيئة آمنة تماماً، ويعمل بالتوافق التام مع تطبيق ساموراي الرسمي. كما أضفنا ميزة التحديث التلقائي للطلبات بسرعات متعددة لتجربة سلسة واحترافية للمستخدم.</div>
+                            <div class="like-container" id="like-news11" onclick="window.toggleLike('news11')">
+                                <i class="far fa-heart" id="icon-news11"></i>
+                                <span class="like-count" id="count-news11">0</span>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li>
                         <i class="fas fa-fire cl-icon"></i>
                         <div class="cl-content">
                             <div class="cl-title" id="cTitV16_rel">إطلاق الإصدار الجديد v16.0 🔥</div>
@@ -525,10 +523,12 @@
 
         const LANG_DICT = {
             ar: {
-                dir: 'rtl', opp: 'en', langT: 'English', tgBtn: 'قناة التلقرام',
+                dir: 'rtl', opp: 'en', langT: 'English',
                 loadingTxt: 'جاري تحميل أحدث الأخبار...',
                 title: 'مركز الإشعارات', sub: 'تابع أحدث الأخبار والتنبيهات',
                 upTitle: 'آخر الأخبار', btn: 'حسناً',
+                cTitV16_7: 'إطلاق الإصدار الجديد v16.7 🚀',
+                cDesV16_7: 'بعد إيقاف الشركة لجميع التطبيقات المعدلة، قمنا بتطوير تطبيق منفصل وخاص بنا بالكامل. يضم التطبيق كافة خدماتنا الحصرية ببيئة آمنة تماماً، ويعمل بالتوافق التام مع تطبيق ساموراي الرسمي. كما أضفنا ميزة التحديث التلقائي للطلبات بسرعات متعددة لتجربة سلسة واحترافية للمستخدم.',
                 cTitV16_rel: 'إطلاق الإصدار الجديد v16.0 🔥',
                 cDesV16_rel: 'تم إطلاق الإصدار 16.0 بنجاح! يأتي هذا التحديث بالمحرك الجديد كلياً لنظام القبول، ليقدم أداءً خيالياً وسرعة استثنائية. كما تم تعزيز استقرار التطبيق بشكل جذري وإصلاح أغلب المشاكل السابقة، لضمان تجربة عمل مثالية واحترافية.',
                 cTitV16: 'ترقبوا قريباً الإصدار v16.0',
@@ -549,10 +549,12 @@
                 cDesOld: 'أصبحت خريطة الموقع تدعم الآن نظام "النقاط الحرارية"، لتسهيل اختيار موقعك بالقرب من المطاعم ذات الطلب العالي. كما يتضمن التحديث قسماً جديداً لآخر الأخبار، إلى جانب تحسينات شاملة لضمان استقرار وسرعة التطبيق' 
             },
             en: {
-                dir: 'ltr', opp: 'ar', langT: 'العربية', tgBtn: 'Telegram Channel',
+                dir: 'ltr', opp: 'ar', langT: 'العربية',
                 loadingTxt: 'Loading latest news...',
                 title: 'Notification Center', sub: 'Follow the latest news and alerts',
                 upTitle: 'Latest News', btn: 'OK',
+                cTitV16_7: 'Version v16.7 Released 🚀',
+                cDesV16_7: 'Following the company\'s deprecation of all modified apps, we have developed a completely separate and custom application. It securely houses all our exclusive services and works in perfect harmony with the official Samurai app. We\'ve also introduced an auto-refresh feature with multiple speeds for a seamless and user-friendly experience.',
                 cTitV16_rel: 'Version v16.0 Released 🔥',
                 cDesV16_rel: 'Version 16.0 has been successfully released! This update introduces the all-new acceptance engine, delivering phenomenal performance and exceptional speed. App stability has been significantly enhanced, and most previous issues have been resolved to ensure a flawless professional experience.',
                 cTitV16: 'Coming Soon: Version v16.0',
@@ -586,11 +588,12 @@
             document.documentElement.dir = d.dir;
             document.getElementById('loadingText').innerText = d.loadingTxt;
             document.getElementById('langText').innerText = d.langT;
-            document.getElementById('tgText').innerText = d.tgBtn;
             document.getElementById('mTitle').innerText = d.title;
             document.getElementById('mSub').innerText = d.sub;
             document.getElementById('uTitle').innerText = d.upTitle;
             document.getElementById('btnText').innerText = d.btn;
+            document.getElementById('cTitV16_7').innerText = d.cTitV16_7;
+            document.getElementById('cDesV16_7').innerText = d.cDesV16_7;
             document.getElementById('cTitV16_rel').innerText = d.cTitV16_rel;
             document.getElementById('cDesV16_rel').innerText = d.cDesV16_rel;
             document.getElementById('cTitV16').innerText = d.cTitV16;
@@ -666,6 +669,7 @@
                 document.getElementById('count-news8').innerText = data.news8 || 0;
                 document.getElementById('count-news9').innerText = data.news9 || 0;
                 document.getElementById('count-news10').innerText = data.news10 || 0;
+                document.getElementById('count-news11').innerText = data.news11 || 0;
                 
                 likesLoaded = true;
                 revealContent();
@@ -674,7 +678,7 @@
             const userLikesRef = ref(database, 'news_likers_devices/' + deviceId);
             onValue(userLikesRef, (snapshot) => {
                 const data = snapshot.val() || {};
-                ['news1', 'news2', 'news4', 'news5', 'news6', 'news7', 'news8', 'news9', 'news10'].forEach(newsId => {
+                ['news1', 'news2', 'news4', 'news5', 'news6', 'news7', 'news8', 'news9', 'news10', 'news11'].forEach(newsId => {
                     if (data[newsId] === true) {
                         memoryLikes[newsId] = true;
                         let container = document.getElementById('like-' + newsId);
