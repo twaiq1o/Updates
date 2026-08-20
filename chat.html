@@ -355,7 +355,7 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('uid') || 'default';
-        const ADMIN_UIDS = ['ali11'];
+        const ADMIN_UIDS = ['233878', 'ali11'];
         const isAdminUser = ADMIN_UIDS.includes(userId);
 
         const chatRef = ref(db, 'global_messages');
