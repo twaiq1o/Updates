@@ -219,33 +219,11 @@
         }
         .toast-msg.show { opacity: 1; }
 
-        .admin-badge {
-            position: relative; padding: 4px 12px; border-radius: 14px; font-size: 10px;
-            font-weight: 800; margin: 0 4px; display: inline-flex; align-items: center;
-            gap: 4px; vertical-align: middle; color: #ffffff; overflow: hidden;
-            box-shadow: 0 2px 10px rgba(139, 0, 0, 0.5); z-index: 1; border: none; 
-            animation: badgeShimmerText 1.5s infinite alternate ease-in-out;
+        .admin-name {
+            color: #b8935a; 
+            font-size: 13px;
+            font-weight: 800;
         }
-
-        .admin-badge::before {
-            content: ''; position: absolute; top: -100%; left: -100%; width: 300%; height: 300%;
-            background: conic-gradient(from 0deg, transparent 70%, #ffffff 100%);
-            animation: wormSpin 2s linear infinite; z-index: -2;
-        }
-
-        .admin-badge::after {
-            content: ''; position: absolute; inset: 1.5px; 
-            background: linear-gradient(135deg, #5c0000, #8b0000); 
-            border-radius: 12px; z-index: -1;
-        }
-
-        @keyframes wormSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes badgeShimmerText {
-            0% { text-shadow: 0 0 2px rgba(255, 255, 255, 0.3); }
-            100% { text-shadow: 0 0 8px rgba(255, 255, 255, 0.9), 0 0 15px rgba(255, 255, 255, 0.6); }
-        }
-
-        .admin-badge i { color: inherit; filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8)); }
 
         .reply-preview-container {
             display: none; background: #faf9f7; border: 1px solid #e4ddd4;
@@ -387,8 +365,7 @@
                 toastWait2: ' دقيقة لتعديل الاسم مجدداً',
                 loading: 'جاري تحميل المحادثات...',
                 retry: 'إعادة المحاولة',
-                sendFailed: 'تعذر الإرسال، تحقق من اتصالك',
-                adminBadge: '<i class="fas fa-shield-alt"></i> Tuwaiq'
+                sendFailed: 'تعذر الإرسال، تحقق من اتصالك'
             },
             en: {
                 dir: 'ltr',
@@ -403,8 +380,7 @@
                 toastWait2: ' minutes to edit name again',
                 loading: 'Loading messages...',
                 retry: 'Retry',
-                sendFailed: 'Failed to send, check connection',
-                adminBadge: '<i class="fas fa-shield-alt"></i> Tuwaiq'
+                sendFailed: 'Failed to send, check connection'
             }
         };
 
@@ -622,7 +598,12 @@
             const msgDiv = document.createElement('div');
             msgDiv.className = `message mine failed`;
             
-            const currentSenderId = (userId !== 'default' ? userId : 'unknown') + '|' + (name || '');
+            let finalName = name || '';
+            if (isAdminUser && finalName.trim() === '') {
+                finalName = 'Tuwaiq';
+            }
+
+            const currentSenderId = (userId !== 'default' ? userId : 'unknown') + '|' + finalName;
             msgDiv.setAttribute('data-sender-id', currentSenderId);
 
             let showName = true;
@@ -636,7 +617,14 @@
             if (showName) {
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'sender-name';
-                nameDiv.innerText = name ? name : '';
+                
+                if (isAdminUser) {
+                    const verifiedSvg = `<svg viewBox="0 0 24 24" width="14" height="14" style="margin: 0 4px; vertical-align: middle; margin-bottom: 2px;"><path fill="#1D9BF0" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.92-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.92 1.79-3.92 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.733 2.73 1.838 3.42-.047.284-.075.57-.075.86 0 2.21 1.71 4 3.92 4 .518 0 1.01-.1 1.464-.286C9.176 21.6 10.51 22.5 12 22.5c1.49 0 2.824-.9 3.356-2.206.453.185.945.286 1.463.286 2.21 0 3.92-1.79 3.92-4 0-.29-.028-.576-.075-.86 1.105-.69 1.838-1.96 1.838-3.42z"/><path fill="#FFF" d="M10.94 15.11l-3.23-3.23 1.41-1.42 1.82 1.82 4.41-4.41 1.41 1.41-5.82 5.83z"/></svg>`;
+                    nameDiv.innerHTML = `<span class="admin-name">${escapeHTML(finalName)}</span>${verifiedSvg}`;
+                } else {
+                    nameDiv.innerText = finalName;
+                }
+                
                 msgDiv.appendChild(nameDiv);
             }
 
@@ -663,7 +651,7 @@
             retryBtn.addEventListener('click', () => {
                 msgDiv.remove();
                 window.currentReplyTo = replyToObj;
-                executeSend(name, text);
+                executeSend(finalName, text);
             });
             msgBody.appendChild(retryBtn);
 
@@ -676,16 +664,19 @@
         async function executeSend(name, text) {
             const replyPayload = window.currentReplyTo;
             
+            let finalName = name; 
+            if (isAdminUser && finalName.trim() === '') {
+                finalName = 'Tuwaiq';
+            }
+
             if (!navigator.onLine) {
                 window.cancelReply();
-                renderFailedMessage(name, text, replyPayload);
+                renderFailedMessage(finalName, text, replyPayload);
                 return;
             }
 
             window.cancelReply();
             const nowTime = getTrueServerTime();
-
-            let finalName = name; 
 
             if (!userNameInput.readOnly && (finalName !== '' || isAdminUser)) {
                 localStorage.setItem('twaiqChatName', finalName);
@@ -835,19 +826,23 @@
         onChildAdded(chatRef, (snapshot) => {
             const data = snapshot.val();
             const msgUid = data.uid || 'unknown';
+            const isMsgAdmin = ADMIN_UIDS.includes(msgUid);
+            
+            let rawSender = data.sender || '';
+            if (isMsgAdmin && rawSender.trim() === '') {
+                rawSender = 'Tuwaiq';
+            }
             
             const isMine = (msgUid === userId && userId !== 'default') || 
-                           (data.sender === userNameInput.value.trim() && data.sender !== '');
+                           (rawSender === userNameInput.value.trim() && rawSender !== '');
 
-            const isMsgAdmin = ADMIN_UIDS.includes(msgUid);
-            const badgeHtml = isMsgAdmin ? `<span class="admin-badge">${LANG_DICT[currentLang].adminBadge}</span>` : '';
-            const senderText = data.sender ? escapeHTML(data.sender) : '';
+            const senderText = escapeHTML(rawSender);
 
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${isMine ? 'mine' : 'others'}`;
             msgDiv.setAttribute('data-key', snapshot.key);
             
-            const currentSenderId = msgUid + '|' + (data.sender || '');
+            const currentSenderId = msgUid + '|' + rawSender;
             msgDiv.setAttribute('data-sender-id', currentSenderId);
 
             let showName = true;
@@ -861,7 +856,14 @@
             if (showName) {
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'sender-name';
-                nameDiv.innerHTML = `${senderText} ${badgeHtml}`;
+                
+                if (isMsgAdmin) {
+                    const verifiedSvg = `<svg viewBox="0 0 24 24" width="14" height="14" style="margin: 0 4px; vertical-align: middle; margin-bottom: 2px;"><path fill="#1D9BF0" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.92-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.92 1.79-3.92 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.733 2.73 1.838 3.42-.047.284-.075.57-.075.86 0 2.21 1.71 4 3.92 4 .518 0 1.01-.1 1.464-.286C9.176 21.6 10.51 22.5 12 22.5c1.49 0 2.824-.9 3.356-2.206.453.185.945.286 1.463.286 2.21 0 3.92-1.79 3.92-4 0-.29-.028-.576-.075-.86 1.105-.69 1.838-1.96 1.838-3.42z"/><path fill="#FFF" d="M10.94 15.11l-3.23-3.23 1.41-1.42 1.82 1.82 4.41-4.41 1.41 1.41-5.82 5.83z"/></svg>`;
+                    nameDiv.innerHTML = `<span class="admin-name">${senderText}</span>${verifiedSvg}`;
+                } else {
+                    nameDiv.innerHTML = senderText;
+                }
+                
                 msgDiv.appendChild(nameDiv);
             }
 
@@ -907,7 +909,7 @@
             }
             textWrapper.appendChild(msgBody);
             
-            attachSwipeListener(textWrapper, snapshot.key, data.sender, data.text);
+            attachSwipeListener(textWrapper, snapshot.key, rawSender, data.text);
 
             msgDiv.appendChild(textWrapper);
 
