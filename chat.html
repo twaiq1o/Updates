@@ -387,6 +387,7 @@
                 nameLabel: 'الاسم',
                 msgPlaceholder: 'اكتب رسالتك...',
                 mustEnterName: 'فضلاً، أدخل اسمك أولاً لتتمكن من المشاركة',
+                notAllowedName: 'عذراً، هذا الاسم محجوز للإدارة',
                 toastWait1: 'يرجى الانتظار ',
                 toastWait2: ' دقيقة لتعديل الاسم مجدداً',
                 loading: 'جاري تحميل المحادثات...',
@@ -402,6 +403,7 @@
                 nameLabel: 'Name',
                 msgPlaceholder: 'Type your message...',
                 mustEnterName: 'Please enter your name first to participate',
+                notAllowedName: 'Sorry, this name is reserved for admin',
                 toastWait1: 'Please wait ',
                 toastWait2: ' minutes to edit name again',
                 loading: 'Loading messages...',
@@ -432,6 +434,12 @@
         }
         applyLanguage();
 
+        function isForbiddenName(name) {
+            if (!name) return false;
+            const n = name.toLowerCase().replace(/[\s_.-]/g, '');
+            return n.includes('tuwaiq') || n.includes('طويق') || n.includes('admin') || n.includes('اداره') || n.includes('إداره') || n.includes('ادارة') || n.includes('إدارة');
+        }
+
         function isDiffLang(text, sysLang) {
             if (!text) return false;
             const arMatches = text.match(/[\u0600-\u06FF]/g) || [];
@@ -445,7 +453,7 @@
             window.currentReplyTo = { id, sender, text, uid };
             
             let previewNameHtml = escapeHTML(sender || LANG_DICT[currentLang].nameLabel);
-            const isAdmin = (uid && ADMIN_UIDS.includes(uid)) || (sender === 'Tuwaiq');
+            const isAdmin = (uid && ADMIN_UIDS.includes(uid));
             
             if (isAdmin) {
                 const verifiedSvg = `<svg class="verified-badge" viewBox="0 0 24 24" width="12" height="12"><path fill="#1D9BF0" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.92-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.92 1.79-3.92 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.733 2.73 1.838 3.42-.047.284-.075.57-.075.86 0 2.21 1.71 4 3.92 4 .518 0 1.01-.1 1.464-.286C9.176 21.6 10.51 22.5 12 22.5c1.49 0 2.824-.9 3.356-2.206.453.185.945.286 1.463.286 2.21 0 3.92-1.79 3.92-4 0-.29-.028-.576-.075-.86 1.105-.69 1.838-1.96 1.838-3.42z"/><path fill="#FFF" d="M10.94 15.11l-3.23-3.23 1.41-1.42 1.82 1.82 4.41-4.41 1.41 1.41-5.82 5.83z"/></svg>`;
@@ -617,10 +625,18 @@
 
         msgTextInput.addEventListener('focus', () => {
             const name = userNameInput.value.trim();
-            if (!name && !isAdminUser) {
-                msgTextInput.blur();
-                showToast(LANG_DICT[currentLang].mustEnterName);
-                return;
+            if (!isAdminUser) {
+                if (!name) {
+                    msgTextInput.blur();
+                    showToast(LANG_DICT[currentLang].mustEnterName);
+                    return;
+                }
+                if (isForbiddenName(name)) {
+                    msgTextInput.blur();
+                    showToast(LANG_DICT[currentLang].notAllowedName);
+                    if(!userNameInput.readOnly) userNameInput.value = '';
+                    return;
+                }
             }
             handleInputFocus();
         });
@@ -671,7 +687,7 @@
                 quoteDiv.className = 'quoted-msg';
                 
                 let replySenderHtml = escapeHTML(replyToObj.sender || '');
-                const isReplyAdmin = (replyToObj.uid && ADMIN_UIDS.includes(replyToObj.uid)) || (replyToObj.sender === 'Tuwaiq');
+                const isReplyAdmin = (replyToObj.uid && ADMIN_UIDS.includes(replyToObj.uid));
                 
                 if (isReplyAdmin) {
                     const verifiedSvg = `<svg class="verified-badge" viewBox="0 0 24 24" width="10" height="10"><path fill="#1D9BF0" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.92-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.92 1.79-3.92 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.733 2.73 1.838 3.42-.047.284-.075.57-.075.86 0 2.21 1.71 4 3.92 4 .518 0 1.01-.1 1.464-.286C9.176 21.6 10.51 22.5 12 22.5c1.49 0 2.824-.9 3.356-2.206.453.185.945.286 1.463.286 2.21 0 3.92-1.79 3.92-4 0-.29-.028-.576-.075-.86 1.105-.69 1.838-1.96 1.838-3.42z"/><path fill="#FFF" d="M10.94 15.11l-3.23-3.23 1.41-1.42 1.82 1.82 4.41-4.41 1.41 1.41-5.82 5.83z"/></svg>`;
@@ -785,9 +801,16 @@
             const name = userNameInput.value.trim();
             const text = msgTextInput.value.trim();
 
-            if (!name && !isAdminUser) {
-                showToast(LANG_DICT[currentLang].mustEnterName);
-                return;
+            if (!isAdminUser) {
+                if (!name) {
+                    showToast(LANG_DICT[currentLang].mustEnterName);
+                    return;
+                }
+                if (isForbiddenName(name)) {
+                    showToast(LANG_DICT[currentLang].notAllowedName);
+                    if(!userNameInput.readOnly) userNameInput.value = '';
+                    return;
+                }
             }
 
             if (text === '') return;
@@ -919,7 +942,7 @@
                 quoteDiv.className = 'quoted-msg';
                 
                 let replySenderHtml = escapeHTML(data.replyTo.sender || '');
-                const isReplyAdmin = (data.replyTo.uid && ADMIN_UIDS.includes(data.replyTo.uid)) || (data.replyTo.sender === 'Tuwaiq');
+                const isReplyAdmin = (data.replyTo.uid && ADMIN_UIDS.includes(data.replyTo.uid));
                 
                 if (isReplyAdmin) {
                     const verifiedSvg = `<svg class="verified-badge" viewBox="0 0 24 24" width="10" height="10"><path fill="#1D9BF0" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.92-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.92 1.79-3.92 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.733 2.73 1.838 3.42-.047.284-.075.57-.075.86 0 2.21 1.71 4 3.92 4 .518 0 1.01-.1 1.464-.286C9.176 21.6 10.51 22.5 12 22.5c1.49 0 2.824-.9 3.356-2.206.453.185.945.286 1.463.286 2.21 0 3.92-1.79 3.92-4 0-.29-.028-.576-.075-.86 1.105-.69 1.838-1.96 1.838-3.42z"/><path fill="#FFF" d="M10.94 15.11l-3.23-3.23 1.41-1.42 1.82 1.82 4.41-4.41 1.41 1.41-5.82 5.83z"/></svg>`;
