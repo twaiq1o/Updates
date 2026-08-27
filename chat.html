@@ -144,6 +144,18 @@
         }
         html[dir="ltr"] .msg-spinner { margin-right: 0; margin-left: 8px; }
 
+        .msg-time {
+            font-size: 9.5px;
+            margin-top: 5px;
+            text-align: end;
+            font-weight: 600;
+            opacity: 0.8;
+            display: block;
+            line-height: 1;
+        }
+        .message.mine .msg-time { color: rgba(255, 255, 255, 0.85); }
+        .message.others .msg-time { color: rgba(29, 27, 32, 0.6); }
+
         .chat-input-area {
             background: #fff; padding: 15px; border-top: 1px solid #f0ece4;
             display: flex; flex-direction: column; gap: 10px; 
@@ -449,6 +461,33 @@
             return false;
         }
 
+        function formatMsgTime(timestamp) {
+            if (!timestamp || typeof timestamp !== 'number') timestamp = Date.now();
+            const date = new Date(timestamp);
+            const now = new Date();
+            
+            const isToday = date.getDate() === now.getDate() && 
+                            date.getMonth() === now.getMonth() && 
+                            date.getFullYear() === now.getFullYear();
+                            
+            const isSameYear = date.getFullYear() === now.getFullYear();
+            
+            const locale = currentLang === 'ar' ? 'ar-EG' : 'en-US';
+            const timeStr = date.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit', hour12: true });
+            
+            if (isToday) {
+                return timeStr;
+            } else {
+                const dateOptions = { 
+                    month: 'short', 
+                    day: 'numeric',
+                    ...(isSameYear ? {} : { year: 'numeric' })
+                };
+                const dateStr = date.toLocaleDateString(locale, dateOptions);
+                return currentLang === 'ar' ? `${dateStr}، ${timeStr}` : `${dateStr}, ${timeStr}`;
+            }
+        }
+
         window.setReply = function(id, sender, text, uid) {
             window.currentReplyTo = { id, sender, text, uid };
             
@@ -714,6 +753,11 @@
                 executeSend(finalName, text);
             });
             msgBody.appendChild(retryBtn);
+
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'msg-time';
+            timeDiv.innerText = formatMsgTime(Date.now());
+            msgBody.appendChild(timeDiv);
 
             textWrapper.appendChild(msgBody);
             msgDiv.appendChild(textWrapper);
@@ -984,6 +1028,12 @@
             if (pendingMessages.has(snapshot.key)) {
                 msgBody.innerHTML += `<span class="msg-spinner" id="spinner-${snapshot.key}"></span>`;
             }
+
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'msg-time';
+            timeDiv.innerText = formatMsgTime(data.timestamp);
+            msgBody.appendChild(timeDiv);
+
             textWrapper.appendChild(msgBody);
             
             attachSwipeListener(textWrapper, snapshot.key, rawSender, data.text, msgUid);
