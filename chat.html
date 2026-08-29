@@ -203,7 +203,7 @@
         .username-input::placeholder { color: #a59b8d; font-weight: 500; }
         .username-input:read-only { color: #a59b8d; cursor: pointer; }
 
-        .message-box { display: flex; gap: 8px; }
+        .message-box { display: flex; gap: 8px; align-items: center; }
         
         .msg-input {
             flex-grow: 1; padding: 12px 15px; border: 1px solid #e4ddd4;
@@ -212,6 +212,14 @@
             resize: none; height: 44px; font-family: inherit; overflow-y: auto;
         }
         .msg-input:focus { border-color: #b8935a; outline: none; background: #fff; }
+
+        .attach-btn {
+            background: #faf9f7; color: #1d1b20; border: 1px solid #e4ddd4; border-radius: 16px;
+            width: 44px; height: 44px; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+        }
+        .attach-btn:hover { background: #e4ddd4; }
+        .attach-btn:active { transform: scale(0.95); }
 
         .send-btn {
             background: #1d1b20; color: #fff; border: none; border-radius: 16px;
@@ -339,6 +347,8 @@
                 <input type="text" id="userName" class="username-input" placeholder="اسمك..." maxlength="20">
             </div>
             <div class="message-box">
+                <button class="attach-btn" id="attachBtn"><i class="fas fa-paperclip"></i></button>
+                <input type="file" id="mediaInput" accept="image/*,video/*" style="display:none;">
                 <textarea id="msgText" class="msg-input" placeholder="اكتب رسالتك..." rows="1" autocomplete="off"></textarea>
                 <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
             </div>
@@ -382,6 +392,8 @@
         const userNameInput = document.getElementById('userName');
         const msgTextInput = document.getElementById('msgText');
         const sendBtn = document.getElementById('sendBtn');
+        const attachBtn = document.getElementById('attachBtn');
+        const mediaInput = document.getElementById('mediaInput');
         const closeChatBtn = document.getElementById('closeChatBtn');
         const toastMsg = document.getElementById('toastMsg');
         const loaderOverlay = document.getElementById('loaderOverlay');
@@ -404,7 +416,9 @@
                 toastWait2: ' دقيقة لتعديل الاسم مجدداً',
                 loading: 'جاري تحميل المحادثات...',
                 retry: 'إعادة المحاولة',
-                sendFailed: 'تعذر الإرسال، تحقق من اتصالك'
+                sendFailed: 'تعذر الإرسال، تحقق من اتصالك',
+                uploading: 'جاري رفع الملف...',
+                uploadFailed: 'فشل رفع الملف'
             },
             en: {
                 dir: 'ltr',
@@ -420,7 +434,9 @@
                 toastWait2: ' minutes to edit name again',
                 loading: 'Loading messages...',
                 retry: 'Retry',
-                sendFailed: 'Failed to send, check connection'
+                sendFailed: 'Failed to send, check connection',
+                uploading: 'Uploading file...',
+                uploadFailed: 'Upload failed'
             }
         };
 
@@ -465,24 +481,15 @@
             if (!timestamp || typeof timestamp !== 'number') timestamp = Date.now();
             const date = new Date(timestamp);
             const now = new Date();
-            
-            const isToday = date.getDate() === now.getDate() && 
-                            date.getMonth() === now.getMonth() && 
-                            date.getFullYear() === now.getFullYear();
-                            
+            const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
             const isSameYear = date.getFullYear() === now.getFullYear();
-            
             const locale = currentLang === 'ar' ? 'ar-EG' : 'en-US';
             const timeStr = date.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit', hour12: true });
             
             if (isToday) {
                 return timeStr;
             } else {
-                const dateOptions = { 
-                    month: 'short', 
-                    day: 'numeric',
-                    ...(isSameYear ? {} : { year: 'numeric' })
-                };
+                const dateOptions = { month: 'short', day: 'numeric', ...(isSameYear ? {} : { year: 'numeric' }) };
                 const dateStr = date.toLocaleDateString(locale, dateOptions);
                 return currentLang === 'ar' ? `${dateStr}، ${timeStr}` : `${dateStr}, ${timeStr}`;
             }
@@ -490,7 +497,6 @@
 
         window.setReply = function(id, sender, text, uid) {
             window.currentReplyTo = { id, sender, text, uid };
-            
             let previewNameHtml = escapeHTML(sender || LANG_DICT[currentLang].nameLabel);
             const isAdmin = (uid && ADMIN_UIDS.includes(uid)) || isForbiddenName(sender);
             
@@ -500,7 +506,7 @@
             }
             
             document.getElementById('replyPreviewName').innerHTML = previewNameHtml;
-            document.getElementById('replyPreviewText').innerText = text;
+            document.getElementById('replyPreviewText').innerText = text || 'Media';
             document.getElementById('replyPreviewContainer').classList.add('active');
             msgTextInput.focus();
         };
@@ -513,6 +519,7 @@
 
         window.translateMsg = async function(btn, text, container) {
             const contentSpan = container.querySelector('.actual-content');
+            if (!contentSpan || !text) return;
             
             if (btn.dataset.translated === 'true') {
                 contentSpan.innerHTML = escapeHTML(text);
@@ -556,13 +563,9 @@
 
         let serverOffset = 0;
         const offsetRef = ref(db, ".info/serverTimeOffset");
-        onValue(offsetRef, (snap) => {
-            serverOffset = snap.val() || 0;
-        });
+        onValue(offsetRef, (snap) => { serverOffset = snap.val() || 0; });
 
-        function getTrueServerTime() {
-            return Date.now() + serverOffset;
-        }
+        function getTrueServerTime() { return Date.now() + serverOffset; }
 
         function showToast(text) {
             toastMsg.innerText = text;
@@ -570,13 +573,8 @@
             setTimeout(() => { toastMsg.classList.remove('show'); }, 3000);
         }
 
-        function killConnection() {
-            try { goOffline(db); } catch(e) {}
-        }
-
-        function restoreConnection() {
-            try { goOnline(db); } catch(e) {}
-        }
+        function killConnection() { try { goOffline(db); } catch(e) {} }
+        function restoreConnection() { try { goOnline(db); } catch(e) {} }
 
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') killConnection();
@@ -629,7 +627,6 @@
 
         userContainer.addEventListener('click', () => {
             if (!userNameInput.readOnly) return;
-            
             const lastEdit = parseInt(localStorage.getItem('twaiqNameLastEdit') || '0', 10);
             const now = getTrueServerTime();
             const diff = now - lastEdit;
@@ -645,9 +642,7 @@
         function handleInputFocus() {
             setTimeout(() => {
                 const card = document.getElementById('chatCard');
-                if(card) {
-                    card.scrollIntoView({ behavior: 'auto', block: 'end' });
-                }
+                if(card) { card.scrollIntoView({ behavior: 'auto', block: 'end' }); }
             }, 300);
         }
 
@@ -655,10 +650,7 @@
             setTimeout(() => {
                 const activeElement = document.activeElement;
                 const isInputActive = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA';
-                
-                if (!isInputActive) {
-                    window.scrollTo({ top: 0, behavior: 'auto' });
-                }
+                if (!isInputActive) { window.scrollTo({ top: 0, behavior: 'auto' }); }
             }, 150);
         }
 
@@ -684,14 +676,12 @@
         userNameInput.addEventListener('focus', handleInputFocus);
         userNameInput.addEventListener('blur', handleInputBlur);
 
-        function renderFailedMessage(name, text, replyToObj) {
+        function renderFailedMessage(name, text, replyToObj, mediaObj = null) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message mine failed`;
             
             let finalName = name || '';
-            if (isAdminUser && finalName.trim() === '') {
-                finalName = 'Tuwaiq';
-            }
+            if (isAdminUser && finalName.trim() === '') finalName = 'Tuwaiq';
 
             const currentSenderId = (userId !== 'default' ? userId : 'unknown') + '|' + finalName;
             msgDiv.setAttribute('data-sender-id', currentSenderId);
@@ -714,7 +704,6 @@
                 } else {
                     nameDiv.innerText = finalName;
                 }
-                
                 msgDiv.appendChild(nameDiv);
             }
 
@@ -724,7 +713,6 @@
             if (replyToObj) {
                 const quoteDiv = document.createElement('div');
                 quoteDiv.className = 'quoted-msg';
-                
                 let replySenderHtml = escapeHTML(replyToObj.sender || '');
                 const isReplyAdmin = (replyToObj.uid && ADMIN_UIDS.includes(replyToObj.uid)) || isForbiddenName(replyToObj.sender);
                 
@@ -732,16 +720,22 @@
                     const verifiedSvg = `<svg class="verified-badge" viewBox="0 0 24 24" width="10" height="10"><path fill="#1D9BF0" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.92-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.92 1.79-3.92 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.733 2.73 1.838 3.42-.047.284-.075.57-.075.86 0 2.21 1.71 4 3.92 4 .518 0 1.01-.1 1.464-.286C9.176 21.6 10.51 22.5 12 22.5c1.49 0 2.824-.9 3.356-2.206.453.185.945.286 1.463.286 2.21 0 3.92-1.79 3.92-4 0-.29-.028-.576-.075-.86 1.105-.69 1.838-1.96 1.838-3.42z"/><path fill="#FFF" d="M10.94 15.11l-3.23-3.23 1.41-1.42 1.82 1.82 4.41-4.41 1.41 1.41-5.82 5.83z"/></svg>`;
                     replySenderHtml = `<span class="admin-name" style="font-size: 10px;">${replySenderHtml}</span>${verifiedSvg}`;
                 }
-
-                quoteDiv.innerHTML = `
-                    <div class="quote-sender">${replySenderHtml}</div>
-                    <div class="quote-text">${escapeHTML(replyToObj.text || '')}</div>
-                `;
+                quoteDiv.innerHTML = `<div class="quote-sender">${replySenderHtml}</div><div class="quote-text">${escapeHTML(replyToObj.text || 'Media')}</div>`;
                 textWrapper.appendChild(quoteDiv);
             }
 
             const msgBody = document.createElement('div');
-            msgBody.innerHTML = `<span class="actual-content">${escapeHTML(text)}</span>`;
+            if (text) {
+                msgBody.innerHTML = `<span class="actual-content">${escapeHTML(text)}</span>`;
+            }
+            if (mediaObj) {
+                const m = document.createElement('div');
+                m.style.marginTop = text ? '8px' : '0';
+                if(mediaObj.type === 'image') m.innerHTML = `<img src="${escapeHTML(mediaObj.url)}" style="max-width:100%; border-radius:8px; display:block; opacity:0.6;">`;
+                else m.innerHTML = `<video src="${escapeHTML(mediaObj.url)}" style="max-width:100%; border-radius:8px; display:block; opacity:0.6;"></video>`;
+                msgBody.appendChild(m);
+            }
+            
             msgBody.innerHTML += `<div style="font-size: 9px; margin-top: 4px; color: #cc0000;">${LANG_DICT[currentLang].sendFailed}</div>`;
             
             const retryBtn = document.createElement('button');
@@ -750,7 +744,7 @@
             retryBtn.addEventListener('click', () => {
                 msgDiv.remove();
                 window.currentReplyTo = replyToObj;
-                executeSend(finalName, text);
+                executeSend(finalName, text, mediaObj);
             });
             msgBody.appendChild(retryBtn);
 
@@ -765,17 +759,14 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        async function executeSend(name, text) {
+        async function executeSend(name, text, mediaObj = null) {
             const replyPayload = window.currentReplyTo;
-            
             let finalName = name; 
-            if (isAdminUser && finalName.trim() === '') {
-                finalName = 'Tuwaiq';
-            }
+            if (isAdminUser && finalName.trim() === '') finalName = 'Tuwaiq';
 
             if (!navigator.onLine) {
                 window.cancelReply();
-                renderFailedMessage(finalName, text, replyPayload);
+                renderFailedMessage(finalName, text, replyPayload, mediaObj);
                 return;
             }
 
@@ -785,17 +776,11 @@
             if (!userNameInput.readOnly && (finalName !== '' || isAdminUser)) {
                 localStorage.setItem('twaiqChatName', finalName);
                 localStorage.setItem('twaiqNameLastEdit', nowTime.toString());
-                
                 if(userId !== 'default' && finalName !== '') {
                     try {
-                        await set(userProfileRef, { 
-                            name: finalName, 
-                            lastEdit: nowTime, 
-                            owner: auth.currentUser.uid 
-                        });
+                        await set(userProfileRef, { name: finalName, lastEdit: nowTime, owner: auth.currentUser.uid });
                     } catch(e) {}
                 }
-
                 lockNameInput();
                 isNameRegistered = true;
             }
@@ -811,10 +796,8 @@
                 text: text,
                 timestamp: serverTimestamp()
             };
-
-            if (replyPayload) {
-                payload.replyTo = replyPayload;
-            }
+            if (mediaObj) payload.media = mediaObj;
+            if (replyPayload) payload.replyTo = replyPayload;
 
             set(newMsgRef, payload).then(() => {
                 isConfirmed = true;
@@ -827,7 +810,7 @@
                     isConfirmed = true;
                     pendingMessages.delete(msgKey);
                     set(newMsgRef, null).catch(()=>{});
-                    renderFailedMessage(finalName, text, replyPayload);
+                    renderFailedMessage(finalName, text, replyPayload, mediaObj);
                 }
             });
 
@@ -836,7 +819,7 @@
                     isConfirmed = true;
                     pendingMessages.delete(msgKey);
                     set(newMsgRef, null).catch(()=>{});
-                    renderFailedMessage(finalName, text, replyPayload);
+                    renderFailedMessage(finalName, text, replyPayload, mediaObj);
                 }
             }, 7000); 
         }
@@ -846,28 +829,21 @@
             const text = msgTextInput.value.trim();
 
             if (!isAdminUser) {
-                if (!name) {
-                    showToast(LANG_DICT[currentLang].mustEnterName);
-                    return;
-                }
+                if (!name) { showToast(LANG_DICT[currentLang].mustEnterName); return; }
                 if (isForbiddenName(name)) {
                     showToast(LANG_DICT[currentLang].notAllowedName);
                     if(!userNameInput.readOnly) userNameInput.value = '';
                     return;
                 }
             }
-
             if (text === '') return;
-
             executeSend(name, text);
-
             msgTextInput.value = '';
             msgTextInput.style.height = '44px';
             msgTextInput.focus();
         }
 
         sendBtn.addEventListener('click', sendMessage);
-
         msgTextInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -875,10 +851,50 @@
             }
         });
 
+        attachBtn.addEventListener('click', () => { mediaInput.click(); });
+
+        mediaInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const name = userNameInput.value.trim();
+            if (!isAdminUser) {
+                if (!name) { showToast(LANG_DICT[currentLang].mustEnterName); return; }
+                if (isForbiddenName(name)) {
+                    showToast(LANG_DICT[currentLang].notAllowedName);
+                    if(!userNameInput.readOnly) userNameInput.value = '';
+                    return;
+                }
+            }
+
+            showToast(LANG_DICT[currentLang].uploading);
+
+            try {
+                const formData = new FormData();
+                formData.append('reqtype', 'fileupload');
+                formData.append('fileToUpload', file);
+                
+                const res = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: formData });
+                if (!res.ok) throw new Error();
+                const url = await res.text();
+                
+                const mediaType = file.type.startsWith('video') ? 'video' : 'image';
+                let finalName = name;
+                if (isAdminUser && finalName === '') finalName = 'Tuwaiq';
+                
+                const text = msgTextInput.value.trim();
+                executeSend(finalName, text, { url, type: mediaType });
+                msgTextInput.value = '';
+                msgTextInput.style.height = '44px';
+            } catch(err) {
+                showToast(LANG_DICT[currentLang].uploadFailed);
+            }
+            mediaInput.value = '';
+        });
+
         function attachSwipeListener(element, snapshotKey, sender, text, uid) {
             let startX = 0, startY = 0, currentX = 0;
-            let isSwiping = false;
-            let isVerticalScroll = false;
+            let isSwiping = false, isVerticalScroll = false;
             
             element.addEventListener('touchstart', (e) => {
                 startX = e.touches[0].clientX;
@@ -893,26 +909,17 @@
                 if (!isSwiping) return;
                 currentX = e.touches[0].clientX;
                 let currentY = e.touches[0].clientY;
-                let deltaX = currentX - startX;
-                let deltaY = currentY - startY;
+                let deltaX = currentX - startX, deltaY = currentY - startY;
                 
                 if (!isVerticalScroll && Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 10) {
                     isVerticalScroll = true;
                     element.style.transform = `translateX(0px)`;
                     return;
                 }
-
                 if (isVerticalScroll) return;
-
                 if (deltaX < 0) deltaX = 0; 
-                
-                if (Math.abs(deltaX) > 60) {
-                    deltaX = Math.sign(deltaX) * (60 + (Math.abs(deltaX) - 60) * 0.15);
-                }
-                
-                if (Math.abs(deltaX) > 5) {
-                    element.style.transform = `translateX(${deltaX}px)`;
-                }
+                if (Math.abs(deltaX) > 60) deltaX = Math.sign(deltaX) * (60 + (Math.abs(deltaX) - 60) * 0.15);
+                if (Math.abs(deltaX) > 5) element.style.transform = `translateX(${deltaX}px)`;
             }, {passive: true});
             
             element.addEventListener('touchend', (e) => {
@@ -920,13 +927,9 @@
                 isSwiping = false;
                 element.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
                 element.style.transform = `translateX(0px)`;
-                
                 if (isVerticalScroll) return;
-
                 let deltaX = currentX - startX;
-                
                 if (deltaX < 0) return; 
-
                 if (Math.abs(deltaX) > 50) { 
                     window.setReply(snapshotKey, sender, text, uid);
                     if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(50);
@@ -938,21 +941,15 @@
             const data = snapshot.val();
             const msgUid = data.uid || 'unknown';
             const isMsgAdmin = ADMIN_UIDS.includes(msgUid);
-            
             let rawSender = data.sender || '';
-            if (isMsgAdmin && rawSender.trim() === '') {
-                rawSender = 'Tuwaiq';
-            }
+            if (isMsgAdmin && rawSender.trim() === '') rawSender = 'Tuwaiq';
             
-            const isMine = (msgUid === userId && userId !== 'default') || 
-                           (rawSender === userNameInput.value.trim() && rawSender !== '');
-
+            const isMine = (msgUid === userId && userId !== 'default') || (rawSender === userNameInput.value.trim() && rawSender !== '');
             const senderText = escapeHTML(rawSender);
 
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${isMine ? 'mine' : 'others'}`;
             msgDiv.setAttribute('data-key', snapshot.key);
-            
             const currentSenderId = msgUid + '|' + rawSender;
             msgDiv.setAttribute('data-sender-id', currentSenderId);
 
@@ -967,14 +964,12 @@
             if (showName) {
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'sender-name';
-                
                 if (isMsgAdmin) {
                     const verifiedSvg = `<svg class="verified-badge" viewBox="0 0 24 24" width="14" height="14"><path fill="#1D9BF0" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.92-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.92 1.79-3.92 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.733 2.73 1.838 3.42-.047.284-.075.57-.075.86 0 2.21 1.71 4 3.92 4 .518 0 1.01-.1 1.464-.286C9.176 21.6 10.51 22.5 12 22.5c1.49 0 2.824-.9 3.356-2.206.453.185.945.286 1.463.286 2.21 0 3.92-1.79 3.92-4 0-.29-.028-.576-.075-.86 1.105-.69 1.838-1.96 1.838-3.42z"/><path fill="#FFF" d="M10.94 15.11l-3.23-3.23 1.41-1.42 1.82 1.82 4.41-4.41 1.41 1.41-5.82 5.83z"/></svg>`;
                     nameDiv.innerHTML = `<span class="admin-name">${senderText}</span>${verifiedSvg}`;
                 } else {
                     nameDiv.innerHTML = senderText;
                 }
-                
                 msgDiv.appendChild(nameDiv);
             }
 
@@ -984,20 +979,13 @@
             if (data.replyTo) {
                 const quoteDiv = document.createElement('div');
                 quoteDiv.className = 'quoted-msg';
-                
                 let replySenderHtml = escapeHTML(data.replyTo.sender || '');
                 const isReplyAdmin = (data.replyTo.uid && ADMIN_UIDS.includes(data.replyTo.uid)) || isForbiddenName(data.replyTo.sender);
-                
                 if (isReplyAdmin) {
                     const verifiedSvg = `<svg class="verified-badge" viewBox="0 0 24 24" width="10" height="10"><path fill="#1D9BF0" d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.92-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.92 1.79-3.92 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.733 2.73 1.838 3.42-.047.284-.075.57-.075.86 0 2.21 1.71 4 3.92 4 .518 0 1.01-.1 1.464-.286C9.176 21.6 10.51 22.5 12 22.5c1.49 0 2.824-.9 3.356-2.206.453.185.945.286 1.463.286 2.21 0 3.92-1.79 3.92-4 0-.29-.028-.576-.075-.86 1.105-.69 1.838-1.96 1.838-3.42z"/><path fill="#FFF" d="M10.94 15.11l-3.23-3.23 1.41-1.42 1.82 1.82 4.41-4.41 1.41 1.41-5.82 5.83z"/></svg>`;
                     replySenderHtml = `<span class="admin-name" style="font-size: 10px;">${replySenderHtml}</span>${verifiedSvg}`;
                 }
-
-                quoteDiv.innerHTML = `
-                    <div class="quote-sender">${replySenderHtml}</div>
-                    <div class="quote-text">${escapeHTML(data.replyTo.text || '')}</div>
-                `;
-                
+                quoteDiv.innerHTML = `<div class="quote-sender">${replySenderHtml}</div><div class="quote-text">${escapeHTML(data.replyTo.text || 'Media')}</div>`;
                 quoteDiv.addEventListener('click', () => {
                     const target = document.querySelector(`[data-key="${data.replyTo.id}"]`);
                     if(target) {
@@ -1012,17 +1000,29 @@
 
             const msgBody = document.createElement('div');
             
-            const actualContent = document.createElement('span');
-            actualContent.className = 'actual-content';
-            actualContent.innerHTML = escapeHTML(data.text);
-            msgBody.appendChild(actualContent);
+            if (data.text) {
+                const actualContent = document.createElement('span');
+                actualContent.className = 'actual-content';
+                actualContent.innerHTML = escapeHTML(data.text);
+                msgBody.appendChild(actualContent);
+                if (isDiffLang(data.text, currentLang)) {
+                    const transBtn = document.createElement('i');
+                    transBtn.className = 'fas fa-language trans-btn-inline';
+                    transBtn.dataset.translated = 'false';
+                    transBtn.addEventListener('click', (e) => window.translateMsg(e.target, data.text, msgBody));
+                    msgBody.appendChild(transBtn);
+                }
+            }
 
-            if (isDiffLang(data.text, currentLang)) {
-                const transBtn = document.createElement('i');
-                transBtn.className = 'fas fa-language trans-btn-inline';
-                transBtn.dataset.translated = 'false';
-                transBtn.addEventListener('click', (e) => window.translateMsg(e.target, data.text, msgBody));
-                msgBody.appendChild(transBtn);
+            if (data.media) {
+                const mediaContainer = document.createElement('div');
+                mediaContainer.style.marginTop = data.text ? '8px' : '0';
+                if (data.media.type === 'image') {
+                    mediaContainer.innerHTML = `<img src="${escapeHTML(data.media.url)}" loading="lazy" style="max-width:100%; border-radius:8px; display:block; cursor:pointer;" onclick="window.open(this.src, '_blank')">`;
+                } else if (data.media.type === 'video') {
+                    mediaContainer.innerHTML = `<video src="${escapeHTML(data.media.url)}" controls preload="metadata" style="max-width:100%; border-radius:8px; display:block;"></video>`;
+                }
+                msgBody.appendChild(mediaContainer);
             }
 
             if (pendingMessages.has(snapshot.key)) {
@@ -1035,9 +1035,7 @@
             msgBody.appendChild(timeDiv);
 
             textWrapper.appendChild(msgBody);
-            
             attachSwipeListener(textWrapper, snapshot.key, rawSender, data.text, msgUid);
-
             msgDiv.appendChild(textWrapper);
 
             chatBox.appendChild(msgDiv);
@@ -1046,22 +1044,12 @@
 
         onChildRemoved(chatRef, (snapshot) => {
             const msgDiv = document.querySelector(`[data-key="${snapshot.key}"]`);
-            if (msgDiv) {
-                msgDiv.remove();
-            }
+            if (msgDiv) msgDiv.remove();
         });
 
         function escapeHTML(str) {
             if (!str) return '';
-            let escaped = str.replace(/[&<>'"]/g, 
-                tag => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    "'": '&#39;',
-                    '"': '&quot;'
-                }[tag] || tag)
-            );
+            let escaped = str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
             return escaped.replace(/\n/g, '<br>').replace(/\\n/g, '<br>');
         }
     </script>
