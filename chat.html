@@ -956,7 +956,7 @@
 
         attachBtn.addEventListener('click', () => { mediaInput.click(); });
 
-                mediaInput.addEventListener('change', async (e) => {
+                        mediaInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
@@ -973,40 +973,58 @@
             showToast(LANG_DICT[currentLang].uploading);
 
             try {
-                const formData = new FormData();
-                formData.append('reqtype', 'fileupload');
+                const reader = new FileReader();
                 
-                let fileName = file.name || '';
-                if (!fileName.includes('.')) {
-                    const ext = file.type.startsWith('video') ? '.mp4' : '.jpg';
-                    fileName = 'media_' + Date.now() + ext;
-                }
-                
-                formData.append('fileToUpload', file, fileName);
-                
-                const res = await fetch('https://catbox.moe/user/api.php', { 
-                    method: 'POST', 
-                    body: formData 
-                });
-                
-                if (!res.ok) throw new Error();
-                const url = await res.text();
-                
-                if(!url.startsWith('http')) throw new Error();
-                
-                const mediaType = file.type.startsWith('video') ? 'video' : 'image';
-                let finalName = name;
-                if (isAdminUser && finalName === '') finalName = 'Tuwaiq';
-                
-                const text = msgTextInput.value.trim();
-                executeSend(finalName, text, { url, type: mediaType });
-                msgTextInput.value = '';
-                msgTextInput.style.height = '44px';
+                reader.onload = async function(event) {
+                    try {
+                        const blob = new Blob([event.target.result], { type: file.type });
+                        const formData = new FormData();
+                        formData.append('reqtype', 'fileupload');
+                        
+                        let fileName = file.name || '';
+                        if (!fileName.includes('.')) {
+                            const ext = file.type.startsWith('video') ? '.mp4' : '.jpg';
+                            fileName = 'media_' + Date.now() + ext;
+                        }
+                        
+                        formData.append('fileToUpload', blob, fileName);
+                        
+                        const res = await fetch('https://catbox.moe/user/api.php', { 
+                            method: 'POST', 
+                            body: formData 
+                        });
+                        
+                        if (!res.ok) throw new Error();
+                        const url = await res.text();
+                        
+                        if(!url.startsWith('http')) throw new Error();
+                        
+                        const mediaType = file.type.startsWith('video') ? 'video' : 'image';
+                        let finalName = name;
+                        if (isAdminUser && finalName === '') finalName = 'Tuwaiq';
+                        
+                        const text = msgTextInput.value.trim();
+                        executeSend(finalName, text, { url, type: mediaType });
+                        msgTextInput.value = '';
+                        msgTextInput.style.height = '44px';
+                    } catch(err) {
+                        showToast(LANG_DICT[currentLang].uploadFailed);
+                    }
+                    mediaInput.value = '';
+                };
+
+                reader.onerror = function() {
+                    showToast(LANG_DICT[currentLang].uploadFailed);
+                    mediaInput.value = '';
+                };
+
+                reader.readAsArrayBuffer(file);
             } catch(err) {
                 showToast(LANG_DICT[currentLang].uploadFailed);
+                mediaInput.value = '';
             }
-            mediaInput.value = '';
         });
+
 
         function attachSwipeListener(element, snapshotKey, sender, text, uid) {
             let startX = 0, startY = 0, currentX = 0;
