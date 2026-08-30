@@ -203,7 +203,7 @@
         .username-input::placeholder { color: #a59b8d; font-weight: 500; }
         .username-input:read-only { color: #a59b8d; cursor: pointer; }
 
-        .message-box { display: flex; gap: 8px; align-items: center; }
+        .message-box { display: flex; gap: 8px; }
         
         .msg-input {
             flex-grow: 1; padding: 12px 15px; border: 1px solid #e4ddd4;
@@ -212,14 +212,6 @@
             resize: none; height: 44px; font-family: inherit; overflow-y: auto;
         }
         .msg-input:focus { border-color: #b8935a; outline: none; background: #fff; }
-
-        .attach-btn {
-            background: #faf9f7; color: #1d1b20; border: 1px solid #e4ddd4; border-radius: 16px;
-            width: 44px; height: 44px; display: flex; justify-content: center; align-items: center;
-            cursor: pointer; transition: all 0.2s; flex-shrink: 0;
-        }
-        .attach-btn:hover { background: #e4ddd4; }
-        .attach-btn:active { transform: scale(0.95); }
 
         .send-btn {
             background: #1d1b20; color: #fff; border: none; border-radius: 16px;
@@ -360,8 +352,6 @@
                 <input type="text" id="userName" class="username-input" placeholder="اسمك..." maxlength="20">
             </div>
             <div class="message-box">
-                <button class="attach-btn" id="attachBtn"><i class="fas fa-paperclip"></i></button>
-                <input type="file" id="mediaInput" accept="image/*,video/*" style="display:none;">
                 <textarea id="msgText" class="msg-input" placeholder="اكتب رسالتك..." rows="1" autocomplete="off"></textarea>
                 <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
             </div>
@@ -405,8 +395,6 @@
         const userNameInput = document.getElementById('userName');
         const msgTextInput = document.getElementById('msgText');
         const sendBtn = document.getElementById('sendBtn');
-        const attachBtn = document.getElementById('attachBtn');
-        const mediaInput = document.getElementById('mediaInput');
         const closeChatBtn = document.getElementById('closeChatBtn');
         const toastMsg = document.getElementById('toastMsg');
         const loaderOverlay = document.getElementById('loaderOverlay');
@@ -432,9 +420,7 @@
                 sendFailed: 'تعذر الإرسال، تحقق من اتصالك',
                 privateReply: 'رد خاص (يظهر للمستخدم المعني فقط)',
                 privateMsgTarget: 'رسالة خاصة لك',
-                privateMsgAdmin: 'رسالة خاصة',
-                uploading: 'جاري رفع الملف...',
-                uploadFailed: 'فشل رفع الملف'
+                privateMsgAdmin: 'رسالة خاصة'
             },
             en: {
                 dir: 'ltr',
@@ -453,9 +439,7 @@
                 sendFailed: 'Failed to send, check connection',
                 privateReply: 'Private Reply (Only target sees it)',
                 privateMsgTarget: 'Private message for you',
-                privateMsgAdmin: 'Private message',
-                uploading: 'Uploading file...',
-                uploadFailed: 'Upload failed'
+                privateMsgAdmin: 'Private message'
             }
         };
 
@@ -542,7 +526,7 @@
             }
 
             document.getElementById('replyPreviewName').innerHTML = previewNameHtml;
-            document.getElementById('replyPreviewText').innerText = text || 'Media';
+            document.getElementById('replyPreviewText').innerText = text;
             document.getElementById('replyPreviewContainer').classList.add('active');
             msgTextInput.focus();
         };
@@ -559,7 +543,6 @@
 
         window.translateMsg = async function(btn, text, container) {
             const contentSpan = container.querySelector('.actual-content');
-            if (!contentSpan || !text) return;
             
             if (btn.dataset.translated === 'true') {
                 contentSpan.innerHTML = escapeHTML(text);
@@ -731,7 +714,7 @@
         userNameInput.addEventListener('focus', handleInputFocus);
         userNameInput.addEventListener('blur', handleInputBlur);
 
-        function renderFailedMessage(name, text, replyToObj, isPrivate, mediaObj = null) {
+        function renderFailedMessage(name, text, replyToObj, isPrivate) {
             const msgDiv = document.createElement('div');
             msgDiv.className = `message mine failed`;
             
@@ -790,24 +773,13 @@
 
                 quoteDiv.innerHTML = `
                     <div class="quote-sender">${replySenderHtml}</div>
-                    <div class="quote-text">${escapeHTML(replyToObj.text || 'Media')}</div>
+                    <div class="quote-text">${escapeHTML(replyToObj.text || '')}</div>
                 `;
                 textWrapper.appendChild(quoteDiv);
             }
 
             const msgBody = document.createElement('div');
-            if (text) {
-                msgBody.innerHTML = `<span class="actual-content">${escapeHTML(text)}</span>`;
-            }
-
-            if (mediaObj) {
-                const m = document.createElement('div');
-                m.style.marginTop = text ? '8px' : '0';
-                if(mediaObj.type === 'image') m.innerHTML = `<img src="${escapeHTML(mediaObj.url)}" style="max-width:100%; border-radius:8px; display:block; opacity:0.6;">`;
-                else m.innerHTML = `<video src="${escapeHTML(mediaObj.url)}" style="max-width:100%; border-radius:8px; display:block; opacity:0.6;"></video>`;
-                msgBody.appendChild(m);
-            }
-
+            msgBody.innerHTML = `<span class="actual-content">${escapeHTML(text)}</span>`;
             msgBody.innerHTML += `<div style="font-size: 9px; margin-top: 4px; color: #cc0000;">${LANG_DICT[currentLang].sendFailed}</div>`;
             
             const retryBtn = document.createElement('button');
@@ -820,7 +792,7 @@
                     const cb = document.getElementById('privateReplyCheckbox');
                     if(cb) cb.checked = true;
                 }
-                executeSend(finalName, text, mediaObj);
+                executeSend(finalName, text);
             });
             msgBody.appendChild(retryBtn);
 
@@ -835,7 +807,7 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        async function executeSend(name, text, mediaObj = null) {
+        async function executeSend(name, text) {
             const replyPayload = window.currentReplyTo;
             const prc = document.getElementById('privateReplyCheckbox');
             const isPrivate = prc ? prc.checked : false;
@@ -847,7 +819,7 @@
 
             if (!navigator.onLine) {
                 window.cancelReply();
-                renderFailedMessage(finalName, text, replyPayload, isPrivate, mediaObj);
+                renderFailedMessage(finalName, text, replyPayload, isPrivate);
                 return;
             }
 
@@ -884,10 +856,6 @@
                 timestamp: serverTimestamp()
             };
 
-            if (mediaObj) {
-                payload.media = mediaObj;
-            }
-
             if (replyPayload) {
                 payload.replyTo = replyPayload;
                 if (isAdminUser && isPrivate && replyPayload.uid) {
@@ -906,7 +874,7 @@
                     isConfirmed = true;
                     pendingMessages.delete(msgKey);
                     set(newMsgRef, null).catch(()=>{});
-                    renderFailedMessage(finalName, text, replyPayload, isPrivate, mediaObj);
+                    renderFailedMessage(finalName, text, replyPayload, isPrivate);
                 }
             });
 
@@ -915,7 +883,7 @@
                     isConfirmed = true;
                     pendingMessages.delete(msgKey);
                     set(newMsgRef, null).catch(()=>{});
-                    renderFailedMessage(finalName, text, replyPayload, isPrivate, mediaObj);
+                    renderFailedMessage(finalName, text, replyPayload, isPrivate);
                 }
             }, 7000); 
         }
@@ -953,78 +921,6 @@
                 sendMessage();
             }
         });
-
-        attachBtn.addEventListener('click', () => { mediaInput.click(); });
-
-                        mediaInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const name = userNameInput.value.trim();
-            if (!isAdminUser) {
-                if (!name) { showToast(LANG_DICT[currentLang].mustEnterName); return; }
-                if (isForbiddenName(name)) {
-                    showToast(LANG_DICT[currentLang].notAllowedName);
-                    if(!userNameInput.readOnly) userNameInput.value = '';
-                    return;
-                }
-            }
-
-            showToast(LANG_DICT[currentLang].uploading);
-
-            try {
-                const reader = new FileReader();
-                
-                reader.onload = async function(event) {
-                    try {
-                        const blob = new Blob([event.target.result], { type: file.type });
-                        const formData = new FormData();
-                        formData.append('reqtype', 'fileupload');
-                        
-                        let fileName = file.name || '';
-                        if (!fileName.includes('.')) {
-                            const ext = file.type.startsWith('video') ? '.mp4' : '.jpg';
-                            fileName = 'media_' + Date.now() + ext;
-                        }
-                        
-                        formData.append('fileToUpload', blob, fileName);
-                        
-                        const res = await fetch('https://catbox.moe/user/api.php', { 
-                            method: 'POST', 
-                            body: formData 
-                        });
-                        
-                        if (!res.ok) throw new Error();
-                        const url = await res.text();
-                        
-                        if(!url.startsWith('http')) throw new Error();
-                        
-                        const mediaType = file.type.startsWith('video') ? 'video' : 'image';
-                        let finalName = name;
-                        if (isAdminUser && finalName === '') finalName = 'Tuwaiq';
-                        
-                        const text = msgTextInput.value.trim();
-                        executeSend(finalName, text, { url, type: mediaType });
-                        msgTextInput.value = '';
-                        msgTextInput.style.height = '44px';
-                    } catch(err) {
-                        showToast(LANG_DICT[currentLang].uploadFailed);
-                    }
-                    mediaInput.value = '';
-                };
-
-                reader.onerror = function() {
-                    showToast(LANG_DICT[currentLang].uploadFailed);
-                    mediaInput.value = '';
-                };
-
-                reader.readAsArrayBuffer(file);
-            } catch(err) {
-                showToast(LANG_DICT[currentLang].uploadFailed);
-                mediaInput.value = '';
-            }
-        });
-
 
         function attachSwipeListener(element, snapshotKey, sender, text, uid) {
             let startX = 0, startY = 0, currentX = 0;
@@ -1161,7 +1057,7 @@
 
                 quoteDiv.innerHTML = `
                     <div class="quote-sender">${replySenderHtml}</div>
-                    <div class="quote-text">${escapeHTML(data.replyTo.text || 'Media')}</div>
+                    <div class="quote-text">${escapeHTML(data.replyTo.text || '')}</div>
                 `;
                 
                 quoteDiv.addEventListener('click', () => {
@@ -1178,30 +1074,17 @@
 
             const msgBody = document.createElement('div');
             
-            if (data.text) {
-                const actualContent = document.createElement('span');
-                actualContent.className = 'actual-content';
-                actualContent.innerHTML = escapeHTML(data.text);
-                msgBody.appendChild(actualContent);
+            const actualContent = document.createElement('span');
+            actualContent.className = 'actual-content';
+            actualContent.innerHTML = escapeHTML(data.text);
+            msgBody.appendChild(actualContent);
 
-                if (isDiffLang(data.text, currentLang)) {
-                    const transBtn = document.createElement('i');
-                    transBtn.className = 'fas fa-language trans-btn-inline';
-                    transBtn.dataset.translated = 'false';
-                    transBtn.addEventListener('click', (e) => window.translateMsg(e.target, data.text, msgBody));
-                    msgBody.appendChild(transBtn);
-                }
-            }
-
-            if (data.media) {
-                const mediaContainer = document.createElement('div');
-                mediaContainer.style.marginTop = data.text ? '8px' : '0';
-                if (data.media.type === 'image') {
-                    mediaContainer.innerHTML = `<img src="${escapeHTML(data.media.url)}" loading="lazy" style="max-width:100%; border-radius:8px; display:block; cursor:pointer;" onclick="window.open(this.src, '_blank')">`;
-                } else if (data.media.type === 'video') {
-                    mediaContainer.innerHTML = `<video src="${escapeHTML(data.media.url)}" controls preload="metadata" style="max-width:100%; border-radius:8px; display:block;"></video>`;
-                }
-                msgBody.appendChild(mediaContainer);
+            if (isDiffLang(data.text, currentLang)) {
+                const transBtn = document.createElement('i');
+                transBtn.className = 'fas fa-language trans-btn-inline';
+                transBtn.dataset.translated = 'false';
+                transBtn.addEventListener('click', (e) => window.translateMsg(e.target, data.text, msgBody));
+                msgBody.appendChild(transBtn);
             }
 
             if (pendingMessages.has(snapshot.key)) {
@@ -1232,9 +1115,15 @@
 
         function escapeHTML(str) {
             if (!str) return '';
-            let escaped = str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-            escaped = escaped.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: #b8935a; text-decoration: underline;">$1</a>');
-            escaped = escaped.replace(/(?<!\d)(\+?\d{9,15})(?!\d)/g, '<a href="tel:$1" style="color: #b8935a; text-decoration: underline; direction: ltr; display: inline-block;">$1</a>');
+            let escaped = str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
             return escaped.replace(/\n/g, '<br>').replace(/\\n/g, '<br>');
         }
     </script>
